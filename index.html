@@ -11,6 +11,7 @@
     <script defer src="classes/player.js"></script>
     <script defer src="data/data.js"></script>
     <script defer src="script.js"></script>
+    <script defer src="quizEditor.js"></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,6 +38,7 @@
                     <td><button onclick="selectPlayerCount(this, 6);" class="playerCountButton">6</button></td>
                 </tr>
             </table>
+            <button id="quizEditorButton" onclick="openQuizEditor();">Custom Quiz Maker</button>
             <input type="file" id="quizFileInput" accept=".json,application/json" style="display: none;">
             <button id="loadCustomGameButton" onclick="quizFileInput.click();">Load Custom Quiz</button>
             <p id="customGameError" class="errorMessage" role="alert"></p>
@@ -90,6 +92,25 @@
             <p>...or a bag of gummy bears.</p>
             <p></p>
             <p>The whole game took <span id="gameTime"></span></p>
+            <button id="backToMenuButton" type="button" class="subtleLink" onclick="returnToMainMenu();">Back to main menu</button>
+        </div>
+
+        <div id="quizEditorView" style="display: none;">
+            <div id="quizEditorHeader">
+                <div id="quizEditorHeading">
+                    <h1>Custom Quiz Maker</h1>
+                    <p id="quizEditorStatus" class="editorStatus"></p>
+                </div>
+                <div id="quizEditorToolbar">
+                    <input type="file" id="quizEditorFileInput" accept=".json,application/json" style="display: none;">
+                    <button type="button" onclick="quizEditorFileInput.click();">Load JSON</button>
+                    <button type="button" onclick="downloadEditorQuiz();">Export JSON</button>
+                    <button type="button" id="closeQuizEditorButton" onclick="closeQuizEditor();">Back to Menu</button>
+                </div>
+            </div>
+            <p id="quizEditorError" class="errorMessage" role="alert"></p>
+            <div id="quizEditorTopics"></div>
+            <button type="button" id="addTopicButton" onclick="addEditorTopic();">+ Add Topic</button>
         </div>
     </div>
 

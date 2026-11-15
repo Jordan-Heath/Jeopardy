@@ -6,6 +6,37 @@ let starttime;
 let currentQuestion;
 let preloadedImages = [];
 
+// Images can be bare filenames from the images folder, paths relative to the
+// app ("./pictures/foo.png"), or remote URLs ("https://example.com/foo.png").
+function resolveImageSource(image) {
+    const value = typeof image === 'string' ? image.trim() : '';
+    if (!value) {
+        return null;
+    }
+
+    // Allow "www.example.com/picture.jpg" as a convenience.
+    if (/^www\./i.test(value)) {
+        return `https://${value}`;
+    }
+
+    // Absolute URLs (https:, http:, data:, blob:, ...) and protocol-relative URLs.
+    if (/^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(value)) {
+        return value;
+    }
+
+    // Root-relative paths and explicitly relative paths are used as-is.
+    if (value.startsWith('/') || value.startsWith('./') || value.startsWith('../')) {
+        return value;
+    }
+
+    // Older quizzes may already include the images folder in the path.
+    if (value.toLowerCase().startsWith('images/')) {
+        return value;
+    }
+
+    return `images/${value}`;
+}
+
 function initialize() {
     startGameButton.disabled = true;
 
@@ -91,6 +122,8 @@ function selectPlayerCount(button, playerCount) {
 }
 
 function startGame() {
+    resetGameProgress();
+
     // Navigate to gameboard-view
     openingView.style.display = 'none';
     gameboardView.style.display = 'flex';
@@ -100,12 +133,39 @@ function startGame() {
     players[0].chooseQuestion();
 }
 
+// Prepare the current quiz and players for a fresh game. This runs when a game
+// starts and when the player returns to the main menu from the final screen.
+function resetGameProgress() {
+    topics.forEach(topic => {
+        topic.questions.forEach(question => {
+            question.completed = false;
+        });
+    });
+
+    gameboardView.querySelectorAll('tbody button').forEach(button => {
+        button.disabled = false;
+    });
+
+    players.forEach(player => {
+        player.score = 0;
+        player.currentAnswer = null;
+        player.removeChooser();
+        player.updateView();
+        player.disableControls();
+        player.element.classList.remove('correctPlayer', 'incorrectPlayer');
+    });
+
+    clearQuestionView();
+    currentQuestion = null;
+}
+
 function selectQuestion(button, topicNumber, questionNumber) {
     // Disable selected question's button on gameboard-view
     button.disabled = true;
 
     // Load selected question from topic
-    currentQuestion = topics[topicNumber].questions[questionNumber];
+    const question = topics[topicNumber].questions[questionNumber];
+    currentQuestion = question;
 
     // Navigate to question view
     gameboardView.style.display = 'none';
@@ -115,23 +175,29 @@ function selectQuestion(button, topicNumber, questionNumber) {
     
 
     // Set the image source (images are optional)
-    questionID.innerHTML = `${topics[topicNumber].name} for ${currentQuestion.score}`;
-    if (currentQuestion.image) {
-        questionImage.src = `images/${currentQuestion.image}`;
+    questionID.innerHTML = `${topics[topicNumber].name} for ${question.score}`;
+    const imageSource = resolveImageSource(question.image);
+    if (imageSource) {
+        questionImage.alt = question.heading || 'Question image';
+        questionImage.onerror = () => {
+            questionImage.style.display = 'none';
+        };
+        questionImage.src = imageSource;
         questionImage.style.display = 'block';
     } else {
         questionImage.removeAttribute('src');
+        questionImage.alt = '';
         questionImage.style.display = 'none';
     }
     
     // Construct the question view text content with typing effect
-    typeText(currentQuestion.heading, questionHeading, () => {
-        typeText(currentQuestion.paragraph, questionParagraph, () => {
+    typeText(question.heading, questionHeading, () => {
+        typeText(question.paragraph, questionParagraph, () => {
             questionAnswerTable.style.opacity = 1;
-            typeText(`A: ${currentQuestion.a}`, questionAnswerA, () => {
-                typeText(`B: ${currentQuestion.b}`, questionAnswerB, () => {
-                    typeText(`C: ${currentQuestion.c}`, questionAnswerC, () => {
-                        typeText(`D: ${currentQuestion.d}`, questionAnswerD, () => {
+            typeText(`A: ${question.a}`, questionAnswerA, () => {
+                typeText(`B: ${question.b}`, questionAnswerB, () => {
+                    typeText(`C: ${question.c}`, questionAnswerC, () => {
+                        typeText(`D: ${question.d}`, questionAnswerD, () => {
                             // Enable controls for players to answer
                             answerQuestionButton.style.opacity = 1;
                             players.forEach(player => player.enableControls());
@@ -207,8 +273,7 @@ function answerQuestion() {
     });
 }
 
-function returnToGameboard() {
-    // clear question page
+function clearQuestionView() {
     questionHeading.textContent = '';
     questionImage.removeAttribute('src');
     questionImage.alt = '';
@@ -223,6 +288,11 @@ function returnToGameboard() {
     document.querySelectorAll('.answer').forEach(answerElement => {
         answerElement.classList.remove('correctAnswer');
     });
+}
+
+function returnToGameboard() {
+    // clear question page
+    clearQuestionView();
 
     // Clear Player Correct/Incorrect
     players.forEach(player => {
@@ -271,6 +341,15 @@ function gameOver() {
 
     // Display game time
     gameTime.innerHTML = `${minutes} minutes ${seconds} seconds`;
+}
+
+function returnToMainMenu() {
+    resetGameProgress();
+
+    gameoverView.style.display = 'none';
+    openingView.style.display = 'flex';
+    gameboardView.style.display = 'none';
+    questionView.style.display = 'none';
 }
 
 function loadCustomGame(event) {
@@ -451,11 +530,12 @@ function preloadImages() {
     preloadedImages = [];
     topics.forEach(topic => {
         topic.questions.forEach(question => {
-            if (!question.image) {
+            const imageSource = resolveImageSource(question.image);
+            if (!imageSource) {
                 return;
             }
             const img = new Image();
-            img.src = `images/${question.image}`;
+            img.src = imageSource;
             preloadedImages.push(img);
         });
     });

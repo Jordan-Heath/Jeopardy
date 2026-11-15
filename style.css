@@ -120,7 +120,8 @@ input:focus-visible {
 #openingView,
 #gameboardView,
 #questionView,
-#gameoverView {
+#gameoverView,
+#quizEditorView {
     flex: 1 1 auto;
     min-height: 0;
 }
@@ -174,7 +175,8 @@ input:focus-visible {
     font-size: clamp(1rem, 1.2vw, 1.6rem);
 }
 
-#loadCustomGameButton {
+#loadCustomGameButton,
+#quizEditorButton {
     width: fit-content;
 }
 
@@ -384,6 +386,252 @@ input:focus-visible {
 
 #gameoverView h2 {
     font-size: clamp(1.4rem, 2.4vw, 3rem);
+}
+
+.subtleLink {
+    margin: clamp(8px, 2vh, 20px) 0 0;
+    padding: 0.25em 0.5em;
+    color: #777;
+    background: none;
+    box-shadow: none;
+    font-size: 0.85em;
+    opacity: 0.65;
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    transition: color 0.2s, opacity 0.2s, text-decoration-color 0.2s;
+}
+
+.subtleLink:hover,
+.subtleLink:focus-visible {
+    color: #333;
+    opacity: 1;
+    text-decoration-color: currentColor;
+}
+
+/* ---------- Quiz maker / editor ---------- */
+
+#quizEditorView {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+    padding: var(--pad);
+    overflow-y: auto;
+    text-align: left;
+}
+
+#quizEditorHeader {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--gap);
+}
+
+#quizEditorHeading {
+    flex: 1 1 320px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(4px, 0.6vh, 8px);
+}
+
+#quizEditorHeading h1 {
+    width: 100%;
+}
+
+.editorStatus {
+    color: #5f6f67;
+    font-size: 0.85em;
+}
+
+#quizEditorToolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: clamp(6px, 0.8vw, 12px);
+}
+
+#quizEditorToolbar button {
+    margin: 0;
+}
+
+#quizEditorTopics {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+}
+
+.editorTopic {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+    padding: var(--pad);
+    background-color: #f4faf6;
+    border: 1px solid #cfd8d3;
+    border-radius: var(--radius);
+}
+
+.editorTopicHeader,
+.editorTopicActions,
+.editorQuestionHeader {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: clamp(6px, 0.8vw, 12px);
+}
+
+.editorTopicHeader,
+.editorQuestionHeader {
+    justify-content: space-between;
+}
+
+.editorTopicName {
+    flex: 1 1 260px;
+    min-width: 0;
+    padding: 0.45em 0.7em;
+    background-color: #fff;
+    border: 1px solid #b9c9c0;
+    border-radius: 0.7em;
+    color: inherit;
+    font: inherit;
+    font-size: 1.05em;
+    font-weight: 600;
+}
+
+.editorTopicActions button,
+.editorQuestionHeader button {
+    margin: 0;
+}
+
+.editorQuestions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+}
+
+.editorQuestion {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(6px, 0.8vh, 12px);
+    padding: var(--pad);
+    background-color: #fff;
+    border: 1px solid #d9e3dd;
+    border-radius: calc(var(--radius) * 0.8);
+}
+
+.editorQuestionHeader h3 {
+    margin: 0;
+    font-size: 1.05em;
+}
+
+.editorQuestionHeader button {
+    font-size: 0.85em;
+}
+
+.editorFields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+    gap: clamp(8px, 1vw, 14px);
+}
+
+.editorField {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.editorFieldWide {
+    grid-column: 1 / -1;
+}
+
+.editorFieldLabel {
+    color: #4c5a53;
+    font-size: 0.78em;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.editorField input,
+.editorField textarea,
+.editorField select {
+    width: 100%;
+    padding: 0.5em 0.65em;
+    background-color: #fff;
+    border: 1px solid #b9c9c0;
+    border-radius: 0.6em;
+    color: inherit;
+    font: inherit;
+    font-size: 0.95em;
+}
+
+.editorField textarea {
+    min-height: 3.4em;
+    resize: vertical;
+}
+
+.editorField input:focus-visible,
+.editorField textarea:focus-visible,
+.editorField select:focus-visible {
+    outline: 3px solid #0b5ed7;
+    outline-offset: 1px;
+}
+
+.editorChoices {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+    gap: clamp(8px, 1vw, 14px);
+}
+
+.editorImagePreview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 72px;
+    max-height: 180px;
+    margin-top: 2px;
+    padding: 6px;
+    overflow: hidden;
+    background-color: #fafcfb;
+    border: 1px dashed #b9c9c0;
+    border-radius: 0.6em;
+    color: #6b7a72;
+}
+
+.editorImagePreview img {
+    max-width: 100%;
+    max-height: 160px;
+    object-fit: contain;
+    border-radius: 4px;
+}
+
+.editorImagePreviewEmpty,
+.editorImagePreviewError {
+    font-size: 0.82em;
+}
+
+.editorImagePreviewError {
+    color: #aa0404;
+    background-color: #fff5f5;
+    border-color: #e3b4b4;
+}
+
+.editorEmptyState {
+    margin: 0;
+    color: #66756d;
+    font-size: 0.9em;
+    font-style: italic;
+}
+
+#addTopicButton {
+    align-self: flex-start;
+    margin: 0;
+}
+
+.editorDangerButton {
+    color: #fff;
+    background-color: #b23b3b;
+    box-shadow: 0 var(--btn-shadow) #7a2626;
 }
 
 /* ---------- Player controls ---------- */
