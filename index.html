@@ -6,9 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Jeopardy</title>
     <link rel="stylesheet" href="style.css">
+
+    <!-- defer lets the page paint first while keeping the scripts in order. -->
     <script defer src="classes/question.js"></script>
     <script defer src="classes/topic.js"></script>
     <script defer src="classes/player.js"></script>
+    <script defer src="quizUtils.js"></script>
     <script defer src="data/data.js"></script>
     <script defer src="script.js"></script>
     <script defer src="quizEditor.js"></script>
@@ -24,7 +27,7 @@
             <h1>Jeopardy
                 <span id="credit">by Jordan Heath</span>
             </h1>
-            <h2 id="customIndicator" style="display: none;">Custom!</h2>
+            <h2 id="customIndicator" hidden>Custom!</h2>
             <h2>How many players?</h2>
             <table>
                 <tr>
@@ -39,13 +42,13 @@
                 </tr>
             </table>
             <button id="quizEditorButton" onclick="openQuizEditor();">Custom Quiz Maker</button>
-            <input type="file" id="quizFileInput" accept=".json,application/json" style="display: none;">
+            <input type="file" id="quizFileInput" accept=".json,application/json" hidden>
             <button id="loadCustomGameButton" onclick="quizFileInput.click();">Load Custom Quiz</button>
             <p id="customGameError" class="errorMessage" role="alert"></p>
             <button id="startGameButton" onclick="startGame();"><h2>Start Game</h2></button>
         </div>
 
-        <div id="gameboardView" style="display: none;">
+        <div id="gameboardView" hidden>
             <h1>Select a Question</h1>
             <table>
                 <thead id="subjectNames">
@@ -58,13 +61,13 @@
             <button id="endEarlyButton" onclick="gameOver()">End Early</button>
         </div>
 
-        <div id="questionView" style="display: none;">
+        <div id="questionView" hidden>
             <div id="questionHeader">
                 <h2 id="questionID"></h2>
                 <h1 id="questionHeading"></h1>
             </div>
             <div id="questionViewBody">
-                <img id="questionImage" alt=""/>
+                <img id="questionImage" alt="">
                 <div id="questionViewBodyQuestion">
                     <p id="questionParagraph"></p>
                     <table id="questionAnswerTable">
@@ -79,38 +82,36 @@
                     </table>
                     <p id="questionAnswer"></p>
                     <button id="answerQuestionButton" onclick="answerQuestion()" disabled>Answer Question</button>
-                    <button id="returnGameboardButton" onclick="returnToGameboard()" disabled style="display: none;">Return</button>
+                    <button id="returnGameboardButton" onclick="returnToGameboard()" disabled hidden>Return</button>
                 </div>
             </div>
-            
         </div>
 
-        <div id="gameoverView" style="display: none;">
+        <div id="gameoverView" hidden>
             <h1><span id="winnerName"></span> is the winner!</h1>
             <p>Congratulations on your victory and your prize of </p>
             <h2><span id="winnerScore"></span> Cents!</h2>
-            <p>...or a bag of gummy bears.</p>
-            <p></p>
+            <p>...or something of similar sentimental value (no guarantee).</p>
             <p>The whole game took <span id="gameTime"></span></p>
             <button id="backToMenuButton" type="button" class="subtleLink" onclick="returnToMainMenu();">Back to main menu</button>
         </div>
 
-        <div id="quizEditorView" style="display: none;">
+        <div id="quizEditorView" hidden>
             <div id="quizEditorBoardView">
                 <div id="quizEditorHeader">
                     <div id="quizEditorHeading">
                         <h1>Custom Quiz Maker</h1>
-                        <p id="quizEditorStatus" class="editorStatus"></p>
+                        <p id="quizEditorStatus" class="editorStatus" role="status" aria-live="polite"></p>
                     </div>
                     <div id="quizEditorToolbar">
-                        <input type="file" id="quizEditorFileInput" accept=".json,application/json" style="display: none;">
+                        <input type="file" id="quizEditorFileInput" accept=".json,application/json" hidden>
                         <button type="button" onclick="quizEditorFileInput.click();">Load JSON</button>
                         <button type="button" onclick="downloadEditorQuiz();">Export JSON</button>
                         <button type="button" id="closeQuizEditorButton" onclick="closeQuizEditor();">Back to Menu</button>
                     </div>
                 </div>
                 <p id="quizEditorError" class="errorMessage" role="alert"></p>
-                <p id="editorBoardEmpty" class="editorEmptyState" style="display: none;">No topics yet. Add a topic below to get started.</p>
+                <p id="editorBoardEmpty" class="editorEmptyState" hidden>No topics yet. Add a topic below to get started.</p>
                 <div id="quizEditorBoard">
                     <table id="editorBoardTable">
                         <thead id="editorBoardTopics"></thead>
@@ -120,7 +121,7 @@
                 </div>
                 <button type="button" id="addTopicButton" onclick="addEditorTopic();">+ Add Topic</button>
             </div>
-            <div id="quizEditorQuestionView" style="display: none;"></div>
+            <div id="quizEditorQuestionView" hidden></div>
         </div>
     </div>
 

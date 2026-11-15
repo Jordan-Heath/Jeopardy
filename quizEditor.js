@@ -1,3 +1,5 @@
+const menuView = document.getElementById('openingView');
+const controlsView = document.getElementById('controlsView');
 const quizEditorView = document.getElementById('quizEditorView');
 const quizEditorBoardView = document.getElementById('quizEditorBoardView');
 const quizEditorQuestionView = document.getElementById('quizEditorQuestionView');
@@ -10,9 +12,9 @@ const quizEditorError = document.getElementById('quizEditorError');
 const quizEditorStatus = document.getElementById('quizEditorStatus');
 const quizEditorFileInput = document.getElementById('quizEditorFileInput');
 
-const EDITOR_ANSWER_LETTERS = ['a', 'b', 'c', 'd'];
+const IMAGE_PREVIEW_DELAY = 500;
 
-const EDITOR_QUESTION_TEMPLATE = `
+const QUESTION_EDITOR_TEMPLATE = `
     <div id="editorQuestionHeader">
         <div id="editorQuestionID">
             <span id="editorQuestionTopicLabel"></span>
@@ -74,6 +76,15 @@ const EDITOR_QUESTION_TEMPLATE = `
 let editorTopics = [];
 let editorQuestionContext = null;
 
+// ---------- Editor data ----------
+
+function createEditorTopic() {
+    return {
+        name: `Topic ${editorTopics.length + 1}`,
+        questions: []
+    };
+}
+
 function createEditorQuestion(questionIndex) {
     return {
         heading: '',
@@ -89,40 +100,101 @@ function createEditorQuestion(questionIndex) {
     };
 }
 
-function createEditorTopic() {
+// Convert a Question (from normalizeQuiz) into the plain shape used here.
+function toEditorQuestion(question) {
     return {
-        name: `Topic ${editorTopics.length + 1}`,
-        questions: []
+        heading: question.heading || '',
+        image: question.image || '',
+        paragraph: question.paragraph || '',
+        a: question.a || '',
+        b: question.b || '',
+        c: question.c || '',
+        d: question.d || '',
+        answer: question.answer || 'a',
+        score: question.score,
+        answerParagraph: question.answerParagraph || ''
     };
 }
+
+function cloneEditorQuestion(question) {
+    return { ...question };
+}
+
+function getEditorQuestionScore(question, questionIndex) {
+    return normalizeEditorScore(question.score, questionIndex);
+}
+
+function normalizeEditorScore(value, questionIndex) {
+    if (value === '' || value === null || value === undefined) {
+        return (questionIndex + 1) * 100;
+    }
+
+    const score = Number(value);
+    return Number.isFinite(score) ? score : (questionIndex + 1) * 100;
+}
+
+// ---------- View switching ----------
 
 function openQuizEditor() {
     if (editorTopics.length === 0) {
         editorTopics.push(createEditorTopic());
     }
 
-    document.getElementById('openingView').style.display = 'none';
-    document.getElementById('controlsView').style.display = 'none';
-    quizEditorView.style.display = 'flex';
-    quizEditorQuestionView.style.display = 'none';
-    quizEditorQuestionView.replaceChildren();
-    quizEditorBoardView.style.display = 'flex';
-    editorQuestionContext = null;
+    hideElement(menuView);
+    hideElement(controlsView);
+    showElement(quizEditorView);
+    showQuizBoard();
 
     setQuizEditorError('');
     setQuizEditorStatus('Select a question to edit it, or add a question at the bottom of a topic. Changes stay in this tab until exported.');
-    renderQuizBoard();
 }
 
 function closeQuizEditor() {
-    editorQuestionContext = null;
-    quizEditorQuestionView.style.display = 'none';
-    quizEditorQuestionView.replaceChildren();
-    quizEditorBoardView.style.display = 'flex';
-    quizEditorView.style.display = 'none';
-    document.getElementById('controlsView').style.display = '';
-    document.getElementById('openingView').style.display = 'flex';
+    clearQuestionEditor();
+    hideElement(quizEditorView);
+    showElement(controlsView);
+    showElement(menuView);
+    setQuizEditorError('');
 }
+
+function showQuizBoard() {
+    clearQuestionEditor();
+    showElement(quizEditorBoardView);
+    renderQuizBoard();
+}
+
+function openQuestionEditor(topicIndex, questionIndex) {
+    const question = editorTopics[topicIndex]?.questions[questionIndex];
+    if (!question) {
+        return;
+    }
+
+    clearQuestionEditor();
+    editorQuestionContext = {
+        topicIndex: topicIndex,
+        questionIndex: questionIndex,
+        draft: cloneEditorQuestion(question),
+        previewTimeout: null
+    };
+
+    hideElement(quizEditorBoardView);
+    showElement(quizEditorQuestionView);
+    setQuizEditorError('');
+    renderQuestionEditor();
+}
+
+function clearQuestionEditor() {
+    if (editorQuestionContext) {
+        clearTimeout(editorQuestionContext.previewTimeout);
+    }
+
+    editorQuestionContext = null;
+    quizEditorQuestionView.onkeydown = null;
+    hideElement(quizEditorQuestionView);
+    quizEditorQuestionView.replaceChildren();
+}
+
+// ---------- Editor board ----------
 
 function renderQuizBoard() {
     editorBoardTopics.replaceChildren();
@@ -130,13 +202,13 @@ function renderQuizBoard() {
     editorBoardActions.replaceChildren();
 
     if (editorTopics.length === 0) {
-        editorBoardTable.style.display = 'none';
-        quizEditorBoardEmpty.style.display = 'block';
+        hideElement(editorBoardTable);
+        showElement(quizEditorBoardEmpty);
         return;
     }
 
-    editorBoardTable.style.display = 'grid';
-    quizEditorBoardEmpty.style.display = 'none';
+    showElement(editorBoardTable);
+    hideElement(quizEditorBoardEmpty);
 
     const maxQuestions = Math.max(0, ...editorTopics.map(topic => topic.questions.length));
     const rowCount = Math.max(1, maxQuestions);
@@ -161,7 +233,8 @@ function renderQuizBoard() {
                 const button = document.createElement('button');
                 button.type = 'button';
                 button.className = 'editorBoardQuestionButton';
-                button.textContent = getEditorQuestionScore(question, questionIndex);
+                button.textContent = String(getEditorQuestionScore(question, questionIndex));
+                button.title = `Edit ${topic.name} for ${button.textContent}`;
                 button.addEventListener('click', () => openQuestionEditor(topicIndex, questionIndex));
                 cell.appendChild(button);
             } else {
@@ -214,11 +287,6 @@ function buildEditorTopicHeader(topic, topicIndex) {
     return cell;
 }
 
-function getEditorQuestionScore(question, questionIndex) {
-    const score = Number(question.score);
-    return Number.isFinite(score) ? score : (questionIndex + 1) * 100;
-}
-
 function addEditorTopic() {
     editorTopics.push(createEditorTopic());
     setQuizEditorError('');
@@ -251,45 +319,27 @@ function addEditorQuestion(topicIndex) {
     const previousQuestion = topic.questions[topic.questions.length - 1];
     const question = createEditorQuestion(topic.questions.length);
 
-    const previousScore = Number(previousQuestion ? previousQuestion.score : NaN);
-    question.score = Number.isFinite(previousScore)
-        ? previousScore + 100
-        : (topic.questions.length + 1) * 100;
+    question.score = previousQuestion
+        ? getEditorQuestionScore(previousQuestion, topic.questions.length - 1) + 100
+        : 100;
 
     topic.questions.push(question);
     setQuizEditorError('');
     openQuestionEditor(topicIndex, topic.questions.length - 1);
 }
 
-function openQuestionEditor(topicIndex, questionIndex) {
-    const question = editorTopics[topicIndex] && editorTopics[topicIndex].questions[questionIndex];
-    if (!question) {
-        return;
-    }
-
-    editorQuestionContext = {
-        topicIndex: topicIndex,
-        questionIndex: questionIndex,
-        draft: { ...question }
-    };
-
-    quizEditorBoardView.style.display = 'none';
-    quizEditorQuestionView.style.display = 'flex';
-    setQuizEditorError('');
-    renderQuestionEditor();
-}
+// ---------- Question editor ----------
 
 function renderQuestionEditor() {
-    if (!editorQuestionContext) {
+    const context = editorQuestionContext;
+    if (!context) {
         return;
     }
 
-    const context = editorQuestionContext;
     const draft = context.draft;
     const topic = editorTopics[context.topicIndex];
 
-    quizEditorQuestionView.innerHTML = EDITOR_QUESTION_TEMPLATE;
-
+    quizEditorQuestionView.innerHTML = QUESTION_EDITOR_TEMPLATE;
     document.getElementById('editorQuestionTopicLabel').textContent = topic.name;
 
     const scoreInput = document.getElementById('editorQuestionScoreInput');
@@ -304,39 +354,59 @@ function renderQuestionEditor() {
         draft.heading = headingInput.textContent;
     });
 
-    const paragraphInput = document.getElementById('editorQuestionParagraphInput');
-    paragraphInput.value = draft.paragraph || '';
-    paragraphInput.addEventListener('input', () => {
-        draft.paragraph = paragraphInput.value;
-    });
+    bindDraftInput(document.getElementById('editorQuestionParagraphInput'), 'paragraph');
 
-    const imageInput = document.getElementById('editorQuestionImageInput');
-    const imagePreview = document.getElementById('editorQuestionImagePreview');
-    imageInput.value = draft.image || '';
-
-    let previewTimeout;
-    imageInput.addEventListener('input', () => {
-        draft.image = imageInput.value;
-        clearTimeout(previewTimeout);
-        previewTimeout = setTimeout(() => {
-            updateEditorImagePreview(imagePreview, imageInput.value);
-        }, 500);
-    });
-    imageInput.addEventListener('change', () => {
-        clearTimeout(previewTimeout);
-        updateEditorImagePreview(imagePreview, imageInput.value);
-    });
-    imagePreview.addEventListener('click', () => imageInput.focus());
-    updateEditorImagePreview(imagePreview, draft.image);
+    const answerParagraphInput = document.getElementById('editorQuestionAnswerParagraphInput');
+    bindDraftInput(answerParagraphInput, 'answerParagraph');
 
     quizEditorQuestionView.querySelectorAll('.editorAnswerInput').forEach(input => {
-        const letter = input.dataset.letter;
-        input.value = draft[letter] || '';
-        input.addEventListener('input', () => {
-            draft[letter] = input.value;
-        });
+        bindDraftInput(input, input.dataset.letter);
     });
 
+    bindImageInput();
+    bindCorrectAnswerMarkers();
+    bindQuestionActions();
+}
+
+// Connect a normal input/textarea to a draft property.
+function bindDraftInput(element, property) {
+    const draft = editorQuestionContext.draft;
+    element.value = draft[property] ?? '';
+    element.addEventListener('input', () => {
+        draft[property] = element.value;
+    });
+}
+
+function bindImageInput() {
+    const context = editorQuestionContext;
+    const draft = context.draft;
+    const imageInput = document.getElementById('editorQuestionImageInput');
+    const imagePreview = document.getElementById('editorQuestionImagePreview');
+
+    imageInput.value = draft.image || '';
+
+    const refreshPreview = () => {
+        context.previewTimeout = null;
+        updateEditorImagePreview(imagePreview, imageInput.value);
+    };
+
+    imageInput.addEventListener('input', () => {
+        draft.image = imageInput.value;
+        clearTimeout(context.previewTimeout);
+        context.previewTimeout = setTimeout(refreshPreview, IMAGE_PREVIEW_DELAY);
+    });
+
+    imageInput.addEventListener('change', () => {
+        clearTimeout(context.previewTimeout);
+        refreshPreview();
+    });
+
+    imagePreview.addEventListener('click', () => imageInput.focus());
+    refreshPreview();
+}
+
+function bindCorrectAnswerMarkers() {
+    const draft = editorQuestionContext.draft;
     const answerCells = Array.from(quizEditorQuestionView.querySelectorAll('#editorAnswerTable td'));
     const answerMarkers = Array.from(quizEditorQuestionView.querySelectorAll('.editorAnswerMarker'));
 
@@ -344,6 +414,7 @@ function renderQuestionEditor() {
         answerCells.forEach(cell => {
             cell.classList.toggle('correctAnswer', cell.dataset.letter === draft.answer);
         });
+
         answerMarkers.forEach(marker => {
             const isCorrect = marker.dataset.letter === draft.answer;
             marker.classList.toggle('correct', isCorrect);
@@ -357,14 +428,11 @@ function renderQuestionEditor() {
             updateCorrectAnswerSelection();
         });
     });
+
     updateCorrectAnswerSelection();
+}
 
-    const answerParagraphInput = document.getElementById('editorQuestionAnswerParagraphInput');
-    answerParagraphInput.value = draft.answerParagraph || '';
-    answerParagraphInput.addEventListener('input', () => {
-        draft.answerParagraph = answerParagraphInput.value;
-    });
-
+function bindQuestionActions() {
     document.getElementById('saveQuestionButton').addEventListener('click', saveQuestionAndExit);
     document.getElementById('discardQuestionButton').addEventListener('click', discardQuestionAndExit);
     document.getElementById('deleteQuestionButton').addEventListener('click', deleteQuestion);
@@ -394,9 +462,7 @@ function updateEditorImagePreview(container, imageValue) {
 
     const image = new Image();
     image.alt = 'Question image preview';
-    image.onload = () => {
-        container.replaceChildren(image);
-    };
+    image.onload = () => container.replaceChildren(image);
     image.onerror = () => {
         container.replaceChildren();
         container.classList.add('editorImagePreviewError');
@@ -406,20 +472,15 @@ function updateEditorImagePreview(container, imageValue) {
 }
 
 function saveQuestionAndExit() {
-    if (!editorQuestionContext) {
+    const context = editorQuestionContext;
+    if (!context) {
         return;
     }
 
-    const context = editorQuestionContext;
-    const draft = context.draft;
+    context.draft.score = normalizeEditorScore(context.draft.score, context.questionIndex);
+    editorTopics[context.topicIndex].questions[context.questionIndex] =
+        cloneEditorQuestion(context.draft);
 
-    let score = Number(draft.score);
-    if (!Number.isFinite(score)) {
-        score = (context.questionIndex + 1) * 100;
-    }
-    draft.score = score;
-
-    editorTopics[context.topicIndex].questions[context.questionIndex] = { ...draft };
     setQuizEditorStatus('Question saved.');
     showQuizBoard();
 }
@@ -434,35 +495,17 @@ function discardQuestionAndExit() {
 }
 
 function deleteQuestion() {
-    if (!editorQuestionContext) {
-        return;
-    }
-
-    if (!window.confirm('Delete this question?')) {
-        return;
-    }
-
     const context = editorQuestionContext;
+    if (!context || !window.confirm('Delete this question?')) {
+        return;
+    }
+
     editorTopics[context.topicIndex].questions.splice(context.questionIndex, 1);
     setQuizEditorStatus('Question deleted.');
     showQuizBoard();
 }
 
-function showQuizBoard() {
-    editorQuestionContext = null;
-    quizEditorQuestionView.style.display = 'none';
-    quizEditorQuestionView.replaceChildren();
-    quizEditorBoardView.style.display = 'flex';
-    renderQuizBoard();
-}
-
-function setQuizEditorError(message) {
-    quizEditorError.textContent = message || '';
-}
-
-function setQuizEditorStatus(message) {
-    quizEditorStatus.textContent = message || '';
-}
+// ---------- Import / export ----------
 
 function buildEditorQuiz() {
     if (editorTopics.length === 0) {
@@ -494,7 +537,7 @@ function buildEditorQuiz() {
             const questionLabel = `"${topicLabel}", question ${questionIndex + 1}`;
             const choices = {};
 
-            EDITOR_ANSWER_LETTERS.forEach(letter => {
+            ANSWER_LETTERS.forEach(letter => {
                 const choice = String(question[letter] || '').trim();
                 if (!choice) {
                     throw new Error(`${questionLabel} needs choice ${letter.toUpperCase()}.`);
@@ -576,51 +619,28 @@ function loadQuizForEditing(event) {
         return;
     }
 
-    const reader = new FileReader();
-    reader.onload = function (loadEvent) {
-        try {
-            const data = JSON.parse(loadEvent.target.result);
-            const normalizedTopics = normalizeQuiz(data);
+    readJsonFile(file, data => {
+        editorTopics = normalizeQuiz(data).map(topic => ({
+            name: topic.name,
+            questions: topic.questions.map(toEditorQuestion)
+        }));
 
-            editorTopics = normalizedTopics.map(topic => ({
-                name: topic.name,
-                questions: topic.questions.map(question => ({
-                    heading: question.heading || '',
-                    image: question.image || '',
-                    paragraph: question.paragraph || '',
-                    a: question.a,
-                    b: question.b,
-                    c: question.c,
-                    d: question.d,
-                    answer: question.answer,
-                    score: question.score,
-                    answerParagraph: question.answerParagraph || ''
-                }))
-            }));
+        setQuizEditorError('');
+        setQuizEditorStatus('Quiz loaded into the editor. Select a question to edit it, or add a new one.');
+        showQuizBoard();
+    }, error => {
+        setQuizEditorError(formatJsonFileError(error));
+    });
 
-            editorQuestionContext = null;
-            quizEditorQuestionView.style.display = 'none';
-            quizEditorQuestionView.replaceChildren();
-            quizEditorBoardView.style.display = 'flex';
+    input.value = '';
+}
 
-            setQuizEditorError('');
-            setQuizEditorStatus('Quiz loaded into the editor. Select a question to edit it, or add a new one.');
-            renderQuizBoard();
-        } catch (error) {
-            setQuizEditorError(error instanceof SyntaxError
-                ? 'That file is not valid JSON.'
-                : error.message);
-        } finally {
-            input.value = '';
-        }
-    };
+function setQuizEditorError(message) {
+    quizEditorError.textContent = message || '';
+}
 
-    reader.onerror = function () {
-        setQuizEditorError('The file could not be read.');
-        input.value = '';
-    };
-
-    reader.readAsText(file);
+function setQuizEditorStatus(message) {
+    quizEditorStatus.textContent = message || '';
 }
 
 quizEditorFileInput.addEventListener('change', loadQuizForEditing);
