@@ -18,7 +18,7 @@ class Player {
         const buttons = this.element.querySelectorAll('.answer-button');
         buttons.forEach(button => {
             button.disabled = true
-            button.classList.remove("activated");
+            button.classList.remove("activated", "chooserAnswer");
         });
     }
 

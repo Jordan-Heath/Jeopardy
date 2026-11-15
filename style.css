@@ -1,8 +1,16 @@
 :root {
     --green: #00eb95;
     --green-dark: #00bd78;
+    --green-hover: #00d488;
+    --green-dark-hover: #00a56a;
     --green-active: #04aa6d;
     --green-active-dark: #037048;
+    --green-active-hover: #03995f;
+    --green-active-dark-hover: #025c3b;
+    --yellow: #ffd84d;
+    --yellow-dark: #b8960e;
+    --yellow-hover: #ffcf1f;
+    --yellow-dark-hover: #997b09;
     --disabled: #888888;
     --disabled-dark: #999999;
     --panel: #d4edda;
@@ -76,7 +84,14 @@ p {
 }
 
 button {
-    /* Make buttons 3d crystal */
+    /* Make buttons 3d crystal. The colours live in custom properties so
+       individual buttons (yellow, red, white) can override them and still
+       get a matching hover colour. */
+    --button-bg: var(--green);
+    --button-bg-hover: var(--green-hover);
+    --button-shadow: var(--green-dark);
+    --button-shadow-hover: var(--green-dark-hover);
+
     display: inline-block;
     padding: 0.35em 0.9em;
     margin-bottom: 0.55em;
@@ -87,14 +102,31 @@ button {
     text-decoration: none;
     outline: none;
     color: #000000;
-    background-color: var(--green);
+    background-color: var(--button-bg);
     border: none;
     border-radius: 0.9em;
-    box-shadow: 0 var(--btn-shadow) var(--green-dark);
+    box-shadow: 0 var(--btn-shadow) var(--button-shadow);
+    transition: background-color 0.15s, box-shadow 0.15s;
+
+    &:hover:not(:disabled) {
+        background-color: var(--button-bg-hover);
+        box-shadow: 0 var(--btn-shadow) var(--button-shadow-hover);
+    }
+
+    /* The highlighted team's answer, shown on the other teams' controls.
+       Keep this before &.activated so a team's own selection still wins. */
+    &.chooserAnswer {
+        --button-bg: var(--yellow);
+        --button-bg-hover: var(--yellow-hover);
+        --button-shadow: var(--yellow-dark);
+        --button-shadow-hover: var(--yellow-dark-hover);
+    }
 
     &.activated {
-        background-color: var(--green-active);
-        box-shadow: 0 var(--btn-shadow) var(--green-active-dark);
+        --button-bg: var(--green-active);
+        --button-bg-hover: var(--green-active-hover);
+        --button-shadow: var(--green-active-dark);
+        --button-shadow-hover: var(--green-active-dark-hover);
     }
 
     &:disabled {
@@ -181,6 +213,10 @@ input:focus-visible {
 
 #loadCustomGameButton,
 #quizEditorButton {
+    --button-bg: var(--yellow);
+    --button-bg-hover: var(--yellow-hover);
+    --button-shadow: var(--yellow-dark);
+    --button-shadow-hover: var(--yellow-dark-hover);
     width: fit-content;
 }
 
@@ -201,6 +237,35 @@ input:focus-visible {
 #startGameButton h2 {
     margin: 0;
     font-size: inherit;
+}
+
+#rules {
+    width: min(100%, 72ch);
+    padding: clamp(8px, 1.2vw, 16px) clamp(12px, 1.6vw, 22px);
+    text-align: left;
+    background-color: #fffbe6;
+    border: 1px solid #e6d98a;
+    border-radius: var(--radius);
+    font-size: 0.9em;
+}
+
+#rules h3 {
+    margin: 0 0 0.35em;
+    font-size: 1em;
+}
+
+#rules ul {
+    margin: 0;
+    padding-left: 1.3em;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2em;
+}
+
+#rules mark {
+    padding: 0 0.25em;
+    background-color: #ffff96;
+    border-radius: 0.3em;
 }
 
 /* ---------- Game board ---------- */
@@ -260,12 +325,14 @@ input:focus-visible {
 }
 
 #endEarlyButton {
+    --button-bg: #aa0404;
+    --button-bg-hover: #c41212;
+    --button-shadow: #700303;
+    --button-shadow-hover: #8a0404;
     flex: 0 0 auto;
     align-self: center;
     margin: 0;
     color: white;
-    background-color: #aa0404;
-    box-shadow: 0 var(--btn-shadow) #700303;
 }
 
 /* ---------- Question view ---------- */
@@ -424,6 +491,10 @@ input:focus-visible {
 }
 
 .subtleLink {
+    --button-bg: transparent;
+    --button-bg-hover: transparent;
+    --button-shadow: transparent;
+    --button-shadow-hover: transparent;
     margin: clamp(8px, 2vh, 20px) 0 0;
     padding: 0.25em 0.5em;
     color: #777;
@@ -556,6 +627,10 @@ input:focus-visible {
 }
 
 .editorTopicRemoveButton {
+    --button-bg: #fff;
+    --button-bg-hover: #ffecec;
+    --button-shadow: transparent;
+    --button-shadow-hover: transparent;
     flex: 0 0 auto;
     width: 1.7em;
     height: 1.7em;
@@ -563,10 +638,8 @@ input:focus-visible {
     padding: 0;
     display: grid;
     place-content: center;
-    background-color: #fff;
     border: 1px solid #e0b4b4;
     border-radius: 50%;
-    box-shadow: none;
     color: #8a1f1f;
     font-size: 0.85em;
     line-height: 1;
@@ -784,6 +857,10 @@ input:focus-visible {
 }
 
 .editorAnswerMarker {
+    --button-bg: #fff;
+    --button-bg-hover: #eef8f1;
+    --button-shadow: transparent;
+    --button-shadow-hover: transparent;
     flex: 0 0 auto;
     width: 2em;
     height: 2em;
@@ -791,10 +868,8 @@ input:focus-visible {
     padding: 0;
     display: grid;
     place-content: center;
-    background-color: #fff;
     border: 2px solid #9bb7a7;
     border-radius: 50%;
-    box-shadow: none;
     color: #333;
     font-size: 0.8em;
     font-weight: 700;
@@ -805,6 +880,8 @@ input:focus-visible {
 }
 
 .editorAnswerMarker.correct {
+    --button-bg: var(--green);
+    --button-bg-hover: var(--green-active);
     background-color: var(--green);
     border-color: #05a76c;
     color: #000;

@@ -92,6 +92,7 @@ function selectPlayerCount(button, playerCount) {
                 const answerButton = document.createElement('button');
 
                 answerButton.className = 'answer-button';
+                answerButton.dataset.letter = letter;
                 answerButton.textContent = letter.toUpperCase();
                 answerButton.addEventListener('click', () => {
                     playerSelectAnswer(answerButton, players[i], letter);
@@ -188,9 +189,16 @@ function selectQuestion(button, topicNumber, questionNumber) {
                 typeText(`B: ${question.b}`, questionAnswerB, () => {
                     typeText(`C: ${question.c}`, questionAnswerC, () => {
                         typeText(`D: ${question.d}`, questionAnswerD, () => {
-                            // Enable controls for players to answer
+                            // The highlighted team answers first, so only they can
+                            // use their controls until they have picked an answer.
                             answerQuestionButton.style.opacity = 1;
-                            players.forEach(player => player.enableControls());
+                            players.forEach(player => {
+                                if (player.isChooser) {
+                                    player.enableControls();
+                                } else {
+                                    player.disableControls();
+                                }
+                            });
                         });
                     });
                 });
@@ -213,7 +221,32 @@ function typeText(text, element, callback) {
     }, 10);
 }
 
+// Show the highlighted team's answer in yellow on every other team's answer
+// buttons, so it is obvious which answer counts as copying.
+function highlightChooserAnswer(selection) {
+    players.forEach(player => {
+        if (player.isChooser) {
+            return;
+        }
+
+        player.element.querySelectorAll('.answer-button').forEach(answerButton => {
+            answerButton.classList.toggle(
+                'chooserAnswer',
+                answerButton.dataset.letter === selection
+            );
+        });
+    });
+}
+
 function playerSelectAnswer(button, player, selection) {
+    const chooser = players.find(otherPlayer => otherPlayer.isChooser);
+
+    // The highlighted team must pick first. Everyone else can only answer
+    // once that team has committed to an answer.
+    if (!player.isChooser && (!chooser || chooser.currentAnswer === null)) {
+        return;
+    }
+
     // Remove the activated class from all of the player's answer buttons
     player.element.querySelectorAll('.answer-button').forEach(answerButton => {
         answerButton.classList.remove('activated');
@@ -222,13 +255,22 @@ function playerSelectAnswer(button, player, selection) {
     button.classList.add('activated');
 
     player.currentAnswer = selection;
-    answerQuestionButton.disabled = false;
 
-    players.forEach(otherPlayer => {
-        if (otherPlayer.currentAnswer === null) {
-            answerQuestionButton.disabled = true;
-        }
-    });
+    // Now that the highlighted team has answered, let the other teams answer
+    // too (or copy the highlighted team's answer).
+    if (player.isChooser) {
+        highlightChooserAnswer(selection);
+
+        players.forEach(otherPlayer => {
+            if (otherPlayer !== player) {
+                otherPlayer.enableControls();
+            }
+        });
+    }
+
+    // Only the highlighted team has to answer, so the question can be marked
+    // as soon as they have picked something.
+    answerQuestionButton.disabled = !chooser || chooser.currentAnswer === null;
 }
 
 function answerQuestion() {
@@ -240,13 +282,31 @@ function answerQuestion() {
     returnGameboardButton.style.opacity = 0;
     players.forEach(player => player.disableControls());
 
+    // Teams that copy the highlighted team's answer get half points when
+    // correct, but lose twice as many points when incorrect.
+    const chooser = players.find(player => player.isChooser);
+    const chooserAnswer = chooser ? chooser.currentAnswer : null;
+
     // Determine who won, assign scores and update view
     players.forEach(player => {
+        // Only the highlighted team has to answer; anyone who passed is skipped.
+        if (player.currentAnswer === null) {
+            return;
+        }
+
+        const copiedChooser = player !== chooser
+            && chooserAnswer !== null
+            && player.currentAnswer === chooserAnswer;
+
         if (currentQuestion.answer === player.currentAnswer) {
-            player.score += currentQuestion.score;
+            player.score += copiedChooser
+                ? currentQuestion.score / 2
+                : currentQuestion.score;
             player.element.classList.add('correctPlayer');
         } else {
-            player.score -= currentQuestion.score;
+            player.score -= copiedChooser
+                ? currentQuestion.score * 2
+                : currentQuestion.score;
             player.element.classList.add('incorrectPlayer');
         }
         player.currentAnswer = null;

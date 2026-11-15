@@ -41,10 +41,21 @@
                     <td><button onclick="selectPlayerCount(this, 6);" class="playerCountButton">6</button></td>
                 </tr>
             </table>
-            <button id="quizEditorButton" onclick="openQuizEditor();">Custom Quiz Maker</button>
-            <input type="file" id="quizFileInput" accept=".json,application/json" hidden>
-            <button id="loadCustomGameButton" onclick="quizFileInput.click();">Load Custom Quiz</button>
+            <section>
+                <button id="quizEditorButton" onclick="openQuizEditor();">Custom Quiz Maker</button>
+                <input type="file" id="quizFileInput" accept=".json,application/json" hidden>
+                <button id="loadCustomGameButton" onclick="quizFileInput.click();">Load Custom Quiz</button>
+            </section>
             <p id="customGameError" class="errorMessage" role="alert"></p>
+            <section id="rules" aria-labelledby="rulesHeading">
+                <h3 id="rulesHeading">How to Play</h3>
+                <ul>
+                    <li>The team highlighted in <mark>yellow</mark> picks the question and answers first.</li>
+                    <li>Only the highlighted team has to answer. Other teams may answer or pass.</li>
+                    <li>Copying the highlighted team's answer (shown in yellow on the other teams' buttons) earns half points if correct, but loses double points if wrong.</li>
+                    <li>Correct answers add points, wrong answers subtract points. Highest score wins!</li>
+                </ul>
+            </section>
             <button id="startGameButton" onclick="startGame();"><h2>Start Game</h2></button>
         </div>
 
