@@ -4,6 +4,7 @@ let topics = [];
 let players = [];
 let starttime;
 let currentQuestion;
+let preloadedImages = [];
 
 function initialize() {
     startGameButton.disabled = true;
@@ -92,7 +93,7 @@ function selectPlayerCount(button, playerCount) {
 function startGame() {
     // Navigate to gameboard-view
     openingView.style.display = 'none';
-    gameboardView.style.display = 'block';
+    gameboardView.style.display = 'flex';
 
     starttime = Date.now();
 
@@ -108,14 +109,20 @@ function selectQuestion(button, topicNumber, questionNumber) {
 
     // Navigate to question view
     gameboardView.style.display = 'none';
-    questionView.style.display = 'block';
+    questionView.style.display = 'flex';
     answerQuestionButton.style.display = 'block';
     answerQuestionButton.disabled = true;
     
 
-    // Set the image source
+    // Set the image source (images are optional)
     questionID.innerHTML = `${topics[topicNumber].name} for ${currentQuestion.score}`;
-    questionImage.src = `images/${currentQuestion.image}`;
+    if (currentQuestion.image) {
+        questionImage.src = `images/${currentQuestion.image}`;
+        questionImage.style.display = 'block';
+    } else {
+        questionImage.removeAttribute('src');
+        questionImage.style.display = 'none';
+    }
     
     // Construct the question view text content with typing effect
     typeText(currentQuestion.heading, questionHeading, () => {
@@ -203,8 +210,9 @@ function answerQuestion() {
 function returnToGameboard() {
     // clear question page
     questionHeading.textContent = '';
-    questionImage.src = '';
+    questionImage.removeAttribute('src');
     questionImage.alt = '';
+    questionImage.style.display = 'none';
     questionParagraph.textContent = '';
     questionAnswerTable.style.opacity = 0;
     questionAnswerA.textContent = '';
@@ -226,7 +234,7 @@ function returnToGameboard() {
     returnGameboardButton.style.display = 'none';
     returnGameboardButton.style.opacity = 0;
     questionView.style.display = 'none';
-    gameboardView.style.display = 'block';
+    gameboardView.style.display = 'flex';
 
     currentQuestion.completed = true;
 
@@ -247,7 +255,7 @@ function returnToGameboard() {
 function gameOver() {
     // Navigate to endscreen
     gameboardView.style.display = 'none';
-    gameoverView.style.display = 'block';
+    gameoverView.style.display = 'flex';
 
     // Determine who won
     let winner = players.reduce((max, player) => player.score > max.score ? player : max, players[0]);
@@ -266,49 +274,133 @@ function gameOver() {
 }
 
 function loadCustomGame(event) {
-    const file = event.target.files[0];
+    const input = event.target;
+    const file = input.files[0];
     if (!file) {
         return;
     }
     const reader = new FileReader();
     reader.onload = function(e) {
-        const contents = e.target.result;
         try {
-            const data = JSON.parse(contents);
+            const data = JSON.parse(e.target.result);
             loadTopics(data);
 
             //make user aware custom game is in progress
             customIndicator.style.display = "block";
-            startGameButton.innerHTML = '<h2>Start CUSTOM Game<h2>';
+            startGameButton.innerHTML = '<h2>Start CUSTOM Game</h2>';
+            setCustomGameError('');
             alert('Enjoy Your Custom Game!');
         } catch (error) {
-            alert('Invalid JSON file');
-            location.reload();
+            // Keep the current game intact and show a helpful message instead of reloading.
+            setCustomGameError(error instanceof SyntaxError
+                ? 'That file is not valid JSON.'
+                : error.message);
+        } finally {
+            // Allow the same file to be selected again.
+            input.value = '';
         }
+    };
+    reader.onerror = function() {
+        setCustomGameError('The file could not be read.');
+        input.value = '';
     };
     reader.readAsText(file);
 }
 
-function loadTopics(data) {
-    topics = [];
+function setCustomGameError(message) {
+    customGameError.textContent = message;
+}
 
-    // Assuming DATA is an object with topic names as keys and arrays of question data as values
-    Object.keys(data).forEach(topicName => {
-        topics.push(new Topic(topicName, data[topicName].map(questionData => {
+const ANSWER_LETTERS = ['a', 'b', 'c', 'd'];
+
+// Validate and normalize imported quiz data so a slightly-off custom quiz
+// reports a clear error instead of breaking partway through a game.
+function normalizeQuiz(data) {
+    if (data === null || typeof data !== 'object' || Array.isArray(data)) {
+        throw new Error('The quiz must be a JSON object whose keys are topic names.');
+    }
+
+    const topicNames = Object.keys(data);
+    if (topicNames.length === 0) {
+        throw new Error('The quiz does not contain any topics.');
+    }
+
+    return topicNames.map(topicName => {
+        const rawQuestions = data[topicName];
+        if (!Array.isArray(rawQuestions) || rawQuestions.length === 0) {
+            throw new Error(`Topic "${topicName}" must be a non-empty array of questions.`);
+        }
+
+        const questions = rawQuestions.map((raw, questionIndex) => {
+            const label = `Topic "${topicName}", question ${questionIndex + 1}`;
+            if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
+                throw new Error(`${label} must be an object.`);
+            }
+
+            const choices = {};
+            ANSWER_LETTERS.forEach(letter => {
+                const choice = raw[letter];
+                if (typeof choice !== 'string' || choice.trim() === '') {
+                    throw new Error(`${label} is missing choice "${letter}".`);
+                }
+                choices[letter] = choice;
+            });
+
             return new Question(
-                questionData.heading,
-                questionData.image,
-                questionData.paragraph,
-                questionData.a,
-                questionData.b,
-                questionData.c,
-                questionData.d,
-                questionData.answer,
-                questionData.score,
-                questionData.answerParagraph
+                typeof raw.heading === 'string' ? raw.heading : '',
+                typeof raw.image === 'string' && raw.image.trim() !== '' ? raw.image.trim() : null,
+                typeof raw.paragraph === 'string' ? raw.paragraph : '',
+                choices.a,
+                choices.b,
+                choices.c,
+                choices.d,
+                normalizeAnswer(raw.answer, choices, label),
+                normalizeScore(raw.score, questionIndex, label),
+                typeof raw.answerParagraph === 'string' ? raw.answerParagraph : ''
             );
-        })));
+        });
+
+        return new Topic(topicName, questions);
     });
+}
+
+function normalizeAnswer(value, choices, label) {
+    if (typeof value !== 'string' || value.trim() === '') {
+        throw new Error(`${label} is missing an "answer" (a, b, c, or d).`);
+    }
+
+    // Accept "C", " c ", or the full text of one of the choices.
+    const normalized = value.trim().toLowerCase();
+    if (ANSWER_LETTERS.includes(normalized)) {
+        return normalized;
+    }
+
+    const matchingLetter = ANSWER_LETTERS.find(letter =>
+        choices[letter].trim().toLowerCase() === normalized
+    );
+    if (matchingLetter) {
+        return matchingLetter;
+    }
+
+    throw new Error(`${label} has answer "${value}"; it must be a, b, c, or d.`);
+}
+
+function normalizeScore(value, questionIndex, label) {
+    // Fall back to the conventional 100/200/300... scale when no score is given.
+    if (value === undefined || value === null || value === '') {
+        return (questionIndex + 1) * 100;
+    }
+
+    const score = Number(value);
+    if (!Number.isFinite(score)) {
+        throw new Error(`${label} has an invalid score "${value}".`);
+    }
+    return score;
+}
+
+function loadTopics(data) {
+    // Normalize first so an invalid quiz leaves the current topics untouched.
+    topics = normalizeQuiz(data);
 
     // Dynamically build the gameboard
     const tbody = gameboardView.querySelector('tbody');
@@ -321,20 +413,30 @@ function loadTopics(data) {
     const headerRow = document.createElement('tr');
     topics.forEach((topic) => {
         const th = document.createElement('th');
-        th.textContent = `${topic.name}`; // Or use topic.name if available
+        th.textContent = `${topic.name}`;
         headerRow.appendChild(th);
     });
     subjectNames.appendChild(headerRow);
 
-    // Create the question rows
-    for (let i = 0; i < topics[0].questions.length; i++) { // Assuming 5 questions per topic
+    // Create the question rows (topics may have different numbers of questions)
+    const rowCount = Math.max(0, ...topics.map(topic => topic.questions.length));
+
+    // Tell the grid how many columns and rows to lay out.
+    const boardTable = gameboardView.querySelector('table');
+    boardTable.style.setProperty('--topic-count', topics.length);
+    boardTable.style.setProperty('--row-count', rowCount);
+
+    for (let i = 0; i < rowCount; i++) {
         const row = document.createElement('tr');
         topics.forEach((topic, topicIndex) => {
             const cell = document.createElement('td');
-            const button = document.createElement('button');
-            button.textContent = `${topic.questions[i].score}`; // Scores are 100, 200, 300, 400, 500
-            button.setAttribute('onclick', `selectQuestion(this, ${topicIndex}, ${i});`);
-            cell.appendChild(button);
+            const question = topic.questions[i];
+            if (question) {
+                const button = document.createElement('button');
+                button.textContent = `${question.score}`;
+                button.addEventListener('click', () => selectQuestion(button, topicIndex, i));
+                cell.appendChild(button);
+            }
             row.appendChild(cell);
         });
         tbody.appendChild(row);
@@ -345,13 +447,16 @@ function loadTopics(data) {
 }
 
 function preloadImages() {
-    // Preload images used in questions
-    const images = [];
+    // Keep references so the browser does not garbage-collect the preloaded images.
+    preloadedImages = [];
     topics.forEach(topic => {
         topic.questions.forEach(question => {
+            if (!question.image) {
+                return;
+            }
             const img = new Image();
             img.src = `images/${question.image}`;
-            images.push(img);
+            preloadedImages.push(img);
         });
     });
 }

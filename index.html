@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Jeopardy</title>
     <link rel="stylesheet" href="style.css">
     <script defer src="classes/question.js"></script>
@@ -22,8 +22,8 @@
         <div id="openingView">
             <h1>Jeopardy
                 <span id="credit">by Jordan Heath</span>
-                <h2 id="customIndicator" style="display: none;">Custom!</h2>
             </h1>
+            <h2 id="customIndicator" style="display: none;">Custom!</h2>
             <h2>How many players?</h2>
             <table>
                 <tr>
@@ -37,8 +37,9 @@
                     <td><button onclick="selectPlayerCount(this, 6);" class="playerCountButton">6</button></td>
                 </tr>
             </table>
-            <input type="file" id="quizFileInput" accept=".json" style="display: none;">
-            <button id="loadCustomGameButton" onclick="quizFileInput.click();" style="display: none;">Load Custom Quiz</button>
+            <input type="file" id="quizFileInput" accept=".json,application/json" style="display: none;">
+            <button id="loadCustomGameButton" onclick="quizFileInput.click();">Load Custom Quiz</button>
+            <p id="customGameError" class="errorMessage" role="alert"></p>
             <button id="startGameButton" onclick="startGame();"><h2>Start Game</h2></button>
         </div>
 
@@ -61,7 +62,7 @@
                 <h1 id="questionHeading"></h1>
             </div>
             <div id="questionViewBody">
-                <img id="questionImage"/>
+                <img id="questionImage" alt=""/>
                 <div id="questionViewBodyQuestion">
                     <p id="questionParagraph"></p>
                     <table id="questionAnswerTable">

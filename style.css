@@ -1,8 +1,81 @@
+:root {
+    --green: #00eb95;
+    --green-dark: #00bd78;
+    --green-active: #04aa6d;
+    --green-active-dark: #037048;
+    --disabled: #888888;
+    --disabled-dark: #999999;
+    --panel: #d4edda;
+    --border: gray;
+    --shadow: darkgray;
+
+    --radius: clamp(10px, 0.9vw, 18px);
+    --gap: clamp(6px, 0.9vw, 16px);
+    --pad: clamp(8px, 1.1vw, 20px);
+
+    --fs-body: clamp(0.85rem, 0.45vw + 0.75rem, 2rem);
+    --fs-h1: clamp(1.5rem, 1.6vw + 1rem, 3.5rem);
+    --fs-h2: clamp(1.1rem, 1vw + 0.8rem, 2.2rem);
+    --fs-board: clamp(0.9rem, 1.1vw + 0.35rem, 2rem);
+    --fs-player: clamp(1rem, 1.4vw + 0.3rem, 2.6rem);
+    --fs-score: clamp(0.95rem, 1.1vw + 0.35rem, 2rem);
+
+    --btn-shadow: 0.42em;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    height: 100vh;
+    height: 100dvh;
+    margin: 0;
+    padding: var(--pad);
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 5px 5px var(--shadow);
+    background: #fff;
+    font-family: "Lexend", sans-serif;
+    font-size: var(--fs-body);
+    font-optical-sizing: auto;
+    font-style: normal;
+}
+
+h1 {
+    margin: 0;
+    padding: clamp(6px, 1vw, 16px);
+    background-color: var(--panel);
+    border-radius: var(--radius);
+    font-size: var(--fs-h1);
+    line-height: 1.1;
+}
+
+h2 {
+    margin: 0;
+    font-size: var(--fs-h2);
+    line-height: 1.2;
+}
+
+p {
+    margin: 0;
+}
+
 button {
     /* Make buttons 3d crystal */
     display: inline-block;
-    padding: 5px 15px;
-    margin-bottom: 9px;
+    padding: 0.35em 0.9em;
+    margin-bottom: 0.55em;
     font-size: 1em;
     font-family: "Lexend", sans-serif;
     cursor: pointer;
@@ -10,256 +83,373 @@ button {
     text-decoration: none;
     outline: none;
     color: #000000;
-    background-color: #00eb95;
+    background-color: var(--green);
     border: none;
-    border-radius: 15px;
-    box-shadow: 0 9px #00bd78;
+    border-radius: 0.9em;
+    box-shadow: 0 var(--btn-shadow) var(--green-dark);
 
     &.activated {
-        background-color: #04AA6D;
-        box-shadow: 0 9px #037048;
+        background-color: var(--green-active);
+        box-shadow: 0 var(--btn-shadow) var(--green-active-dark);
     }
 
     &:disabled {
-        background-color: #888888;
-        box-shadow: 0 9px #999;
+        background-color: var(--disabled);
+        box-shadow: 0 var(--btn-shadow) var(--disabled-dark);
+    }
+
+    &:focus-visible {
+        outline: 3px solid #0b5ed7;
+        outline-offset: 2px;
     }
 }
 
-body {
-    height: 820px;
-    width: 1280px;
-    margin: 15px auto;
-    border: 1px solid gray;
-    box-shadow: 9px 9px darkgray;
-    border-radius: 15px;
-    font-size: 1.2em;
-    font-family: "Lexend", sans-serif;
-    font-optical-sizing: auto;
-    font-style: normal;
+input:focus-visible {
+    outline: 3px solid #0b5ed7;
+    outline-offset: 2px;
+}
 
-    h1 {
-        margin: auto;
-        box-sizing: border-box;
-        padding: inherit;
-        background-color: #d4edda;
-        border-radius: 15px;
-        width: 100%;
+#mainView {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+}
+
+#openingView,
+#gameboardView,
+#questionView,
+#gameoverView {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+/* ---------- Opening view ---------- */
+
+#openingView {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    justify-content: safe center;
+    align-items: center;
+    gap: clamp(8px, 1.6vh, 24px);
+    padding: var(--pad);
+    overflow-y: auto;
+}
+
+#openingView h1 {
+    width: 100%;
+}
+
+#credit {
+    display: block;
+    font-size: clamp(0.7rem, 0.5vw + 0.55rem, 1.1rem);
+    font-weight: 400;
+}
+
+#customIndicator {
+    position: absolute;
+    top: var(--pad);
+    right: var(--pad);
+    padding: 0.15em 0.6em;
+    border-radius: 999px;
+    background-color: #fff3cd;
+    color: #7a5b00;
+    animation: customIndicatorAnimation 3s infinite;
+}
+
+#openingView table {
+    margin: 0 auto;
+    border-collapse: collapse;
+}
+
+#openingView td {
+    padding: clamp(2px, 0.4vw, 6px);
+}
+
+.playerCountButton {
+    min-width: clamp(48px, 7vw, 96px);
+    font-size: clamp(1rem, 1.2vw, 1.6rem);
+}
+
+#loadCustomGameButton {
+    width: fit-content;
+}
+
+.errorMessage {
+    max-width: 70ch;
+    color: #aa0404;
+    font-size: 0.9em;
+
+    &:empty {
+        display: none;
+    }
+}
+
+#startGameButton {
+    font-size: clamp(1rem, 1.2vw, 1.6rem);
+}
+
+#startGameButton h2 {
+    margin: 0;
+    font-size: inherit;
+}
+
+/* ---------- Game board ---------- */
+
+#gameboardView {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+    padding: var(--pad);
+    overflow-y: auto;
+}
+
+#gameboardView h1 {
+    flex: 0 0 auto;
+}
+
+#gameboardView table {
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: repeat(var(--topic-count, 6), minmax(0, 1fr));
+    grid-template-rows: max-content repeat(var(--row-count, 5), minmax(min-content, 1fr));
+}
+
+#gameboardView thead,
+#gameboardView tbody,
+#gameboardView tr {
+    display: contents;
+}
+
+#gameboardView th,
+#gameboardView td {
+    display: flex;
+    min-width: 0;
+    padding: clamp(3px, 0.35vw, 6px);
+    text-align: center;
+}
+
+#gameboardView thead th {
+    display: grid;
+    min-height: clamp(32px, 6vh, 90px);
+    place-content: center;
+    background-color: #f2f2f2;
+    font-size: var(--fs-board);
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+}
+
+#gameboardView td button {
+    flex: 1 1 auto;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    margin: 0;
+    font-size: var(--fs-board);
+}
+
+#endEarlyButton {
+    flex: 0 0 auto;
+    align-self: center;
+    margin: 0;
+    color: white;
+    background-color: #aa0404;
+    box-shadow: 0 var(--btn-shadow) #700303;
+}
+
+/* ---------- Question view ---------- */
+
+#questionView {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+    padding: var(--pad);
+}
+
+#questionHeader {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: var(--gap);
+}
+
+#questionID,
+#questionHeading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    padding: clamp(6px, 0.8vw, 14px);
+    background-color: var(--panel);
+    border-radius: var(--radius);
+    overflow-wrap: anywhere;
+}
+
+#questionID {
+    flex: 0 1 28%;
+    font-size: var(--fs-h2);
+}
+
+#questionHeading {
+    flex: 1 1 auto;
+    font-size: var(--fs-h1);
+}
+
+#questionViewBody {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: clamp(8px, 1.5vw, 28px);
+}
+
+#questionImage {
+    flex: 0 0 34%;
+    width: 34%;
+    min-width: 120px;
+    max-height: 100%;
+    height: auto;
+    object-fit: contain;
+    align-self: flex-start;
+    border-radius: var(--radius);
+}
+
+#questionViewBodyQuestion {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    gap: var(--gap);
+    padding: clamp(4px, 0.8vw, 12px);
+    overflow-y: auto;
+}
+
+#questionParagraph,
+#questionAnswer {
+    max-width: 62ch;
+}
+
+#questionAnswerTable {
+    width: min(100%, 900px);
+    table-layout: fixed;
+    border-top: solid #808080;
+    border-bottom: solid #808080;
+    opacity: 0;
+    transition: opacity 1s;
+
+    td {
+        width: 50%;
+        padding: clamp(4px, 0.7vw, 12px);
+        overflow-wrap: anywhere;
     }
 
-    #mainView {
-        height: 70%;
+    .correctAnswer {
+        background-color: var(--panel); /* Light green background */
+        border: 2px solid #155724; /* Dark green border */
+        color: #155724; /* Dark green text color */
+    }
+}
+
+#answerQuestionButton,
+#returnGameboardButton {
+    opacity: 0;
+    transition: opacity 1s;
+}
+
+/* ---------- Game over ---------- */
+
+#gameoverView {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    justify-content: safe center;
+    align-items: center;
+    gap: clamp(6px, 1.2vh, 18px);
+    padding: var(--pad);
+    overflow-y: auto;
+}
+
+#gameoverView h1 {
+    width: 100%;
+}
+
+#gameoverView h2 {
+    font-size: clamp(1.4rem, 2.4vw, 3rem);
+}
+
+/* ---------- Player controls ---------- */
+
+#controlsView {
+    flex: 0 0 auto;
+    max-height: 38vh;
+    max-height: 38dvh;
+    min-height: 0;
+    display: flex;
+}
+
+#players {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: clamp(4px, 0.6vw, 12px);
+    padding: var(--gap) 0 0;
+    border-top: 1px solid var(--border);
+    overflow: auto;
+
+    h2 {
+        margin: auto;
+        color: gray;
+    }
+}
+
+.player {
+    flex: 1 1 clamp(120px, 14vw, 240px);
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(2px, 0.5vh, 8px);
+    padding: clamp(2px, 0.5vw, 8px);
+    border-radius: var(--radius);
+
+    .player-name {
         width: 100%;
-        margin: 0px;
-        padding: 0px;
-        box-sizing: border-box;
+        border: none;
         text-align: center;
-    
-        table {
-            display: inline-block;
-        }
-    
-        #openingView {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            height: 100%;
-            width: 100%;
-            margin: 0px;
-            padding: 15px;
-            box-sizing: border-box;
-        
-            #credit {
-                font-size: 16px;
-                font-weight: 400;
-            }
-        
-            #customIndicator {
-                position: absolute;
-                animation: customIndicatorAnimation 3s infinite;
-            }
-        
-            h2 {
-                padding: 0;
-                margin: auto;
-            }
-        
-            table {
-                margin: auto;
-            }
-        
-            #loadCustomGameButton {
-                width: fit-content;
-                margin: auto;
-            }
-        }
-        
-        #gameboardView {
-            height: 100%;
-            width: 100%;
-            margin: 0px;
-            padding: 15px;
-            box-sizing: border-box;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        
-            table {
-                border-collapse: collapse;
-                table-layout: fixed;
-        
-                th, td {
-                    width: 200px;
-                    height: 40px;
-                    padding: 10px;
-                    text-align: center;
-                }
-        
-                th {
-                    background-color: #f2f2f2;
-                }
-        
-                td button {
-                    width: 100%;
-                    height: 100%;
-                    font-size: 16px;
-                }
-            }
-
-            #endEarlyButton {
-                display: block;
-                width: fit-content;
-                margin: 50px auto;
-
-                color: white;
-                background-color: #aa0404;
-                box-shadow: 0 9px #700303;
-            }
-        }
-        
-        #questionView {
-            height: 100%;
-            width: 100%;
-            max-width: 1280px;
-            margin: 0px;
-            padding: 15px;
-            box-sizing: border-box;
-        
-            #questionHeader {
-                display: flex;
-                flex-direction: row;
-        
-                #questionID {
-                    width: 396px;
-                }
-        
-                #questionHeading {
-                    width: 900px;
-                }
-            }
-        
-            #questionViewBody {
-                height: 80%;
-                display: flex;
-                flex-direction: row;
-                box-sizing: border-box;
-        
-                #questionImage {
-                    width: 380px;
-                }
-        
-                #questionViewBodyQuestion {
-                    margin: 0 auto;
-                    width: 900px;
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: space-around;
-        
-                    #questionParagraph,
-                    #questionAnswer {
-                        max-width: 600px;
-                        margin: 20px auto;
-                    }
-        
-                    #questionAnswerTable {
-                        border-top: solid #808080;
-                        border-bottom: solid #808080;
-                        opacity: 0;
-                        transition: opacity 1s;
-                        td {
-                            width: 425px;
-                        }
-                        .correctAnswer {
-                            background-color: #d4edda; /* Light green background */
-                            border: 2px solid #155724; /* Dark green border */
-                            color: #155724; /* Dark green text color */
-                        }
-                    }
-        
-                    #answerQuestionButton,
-                    #returnGameboardButton {
-                        opacity: 0;
-                        transition: opacity 1s;
-                    }
-                }
-            }
-        }
+        font-family: inherit;
+        font-size: var(--fs-player);
+        background-color: transparent;
     }
-    
-    #controlsView {
-        height: 30%;
-        width: 100%;
-        margin: auto;
+
+    .player-score {
+        margin: 0;
+        font-size: var(--fs-score);
+    }
+
+    table {
+        border-collapse: separate;
+        border-spacing: clamp(4px, 0.5vw, 12px);
+    }
+
+    button {
+        width: clamp(38px, 4.5vw, 100px);
+        height: clamp(30px, 4vh, 48px);
+        margin: 0;
         padding: 0;
-        box-sizing: border-box;
-        display: flex;
-        flex-direction: row;
-    
-        #players {
-            height: 100%;
-            width: 100%;
-            padding: 0;
-            margin: 0;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: row;
-            overflow-y: auto;
-            border-top: 1px solid gray;
-    
-            h2 {
-                margin: auto;
-                color: gray;
-            }
-        
-            .player {
-                flex: 1;
-                box-sizing: border-box;
-                text-align: center;
-        
-                .player-name {
-                    width: 95%;
-                    border: none;
-                    text-align: center;
-                    font-size: 2em;
-                    background-color: transparent;
-                }
-        
-                .player-score {
-                    font-size: 1.5em;
-                    margin: 10px;
-                }
-        
-                table {
-                    display: inline-block;
-        
-                    button {
-                        height: 40px;
-                        width: 100px;
-                        margin: 5px 0px;
-                    }
-                }
-            }
-        }
+        font-size: clamp(0.75rem, 0.6vw + 0.5rem, 1.2rem);
     }
 }
 
@@ -268,11 +458,79 @@ body {
 }
 
 .correctPlayer {
-    background-color: #04AA6D;
+    background-color: #04aa6d;
 }
 
 .incorrectPlayer {
     background-color: indianred;
+}
+
+/* ---------- Narrow / portrait screens ---------- */
+
+@media (max-width: 800px) {
+    #questionHeader {
+        flex-direction: column;
+    }
+
+    #questionID {
+        flex: 0 0 auto;
+        width: 100%;
+    }
+
+    #questionViewBody {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #questionImage {
+        flex: 0 0 auto;
+        width: min(80%, 320px);
+        min-width: 0;
+        max-height: 28vh;
+        align-self: center;
+    }
+
+    #questionViewBodyQuestion {
+        width: 100%;
+    }
+
+    .player {
+        flex: 1 1 100px;
+    }
+
+    #customIndicator {
+        position: static;
+    }
+}
+
+/* ---------- Short screens ---------- */
+
+@media (max-height: 620px) {
+    :root {
+        --pad: 6px;
+        --gap: 4px;
+    }
+
+    #gameboardView thead th {
+        min-height: 28px;
+    }
+
+    #gameboardView td button {
+        min-height: 30px;
+    }
+
+    #controlsView {
+        max-height: 42vh;
+        max-height: 42dvh;
+    }
+
+    .player .player-name {
+        font-size: clamp(0.9rem, 2vw, 1.4rem);
+    }
+
+    .player .player-score {
+        font-size: clamp(0.8rem, 1.6vw, 1.2rem);
+    }
 }
 
 @keyframes customIndicatorAnimation {
