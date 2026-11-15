@@ -1,12 +1,78 @@
 const quizEditorView = document.getElementById('quizEditorView');
-const quizEditorTopicsElement = document.getElementById('quizEditorTopics');
+const quizEditorBoardView = document.getElementById('quizEditorBoardView');
+const quizEditorQuestionView = document.getElementById('quizEditorQuestionView');
+const quizEditorBoardEmpty = document.getElementById('editorBoardEmpty');
+const editorBoardTable = document.getElementById('editorBoardTable');
+const editorBoardTopics = document.getElementById('editorBoardTopics');
+const editorBoardQuestions = document.getElementById('editorBoardQuestions');
+const editorBoardActions = document.getElementById('editorBoardActions');
 const quizEditorError = document.getElementById('quizEditorError');
 const quizEditorStatus = document.getElementById('quizEditorStatus');
 const quizEditorFileInput = document.getElementById('quizEditorFileInput');
 
 const EDITOR_ANSWER_LETTERS = ['a', 'b', 'c', 'd'];
 
+const EDITOR_QUESTION_TEMPLATE = `
+    <div id="editorQuestionHeader">
+        <div id="editorQuestionID">
+            <span id="editorQuestionTopicLabel"></span>
+            <span class="editorQuestionFor">for</span>
+            <input type="number" id="editorQuestionScoreInput" step="10" aria-label="Question score">
+        </div>
+        <div id="editorQuestionHeadingShell">
+            <div id="editorQuestionHeadingInput" contenteditable="true" role="textbox" aria-label="Question heading" data-placeholder="Question heading"></div>
+        </div>
+    </div>
+    <div id="editorQuestionBody">
+        <div id="editorQuestionImageColumn">
+            <div id="editorQuestionImagePreview" title="Click to edit the image path"></div>
+            <input type="text" id="editorQuestionImageInput" placeholder="Image filename, relative path, or web URL" aria-label="Question image">
+        </div>
+        <div id="editorQuestionBodyContent">
+            <textarea id="editorQuestionParagraphInput" rows="3" placeholder="Question text" aria-label="Question text"></textarea>
+            <table id="editorAnswerTable">
+                <tr>
+                    <td data-letter="a">
+                        <div class="editorAnswerCell">
+                            <button type="button" class="editorAnswerMarker" data-letter="a" title="Mark choice A as correct">A</button>
+                            <textarea class="editorAnswerInput" data-letter="a" rows="2" placeholder="Choice A" aria-label="Choice A"></textarea>
+                        </div>
+                    </td>
+                    <td data-letter="b">
+                        <div class="editorAnswerCell">
+                            <button type="button" class="editorAnswerMarker" data-letter="b" title="Mark choice B as correct">B</button>
+                            <textarea class="editorAnswerInput" data-letter="b" rows="2" placeholder="Choice B" aria-label="Choice B"></textarea>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td data-letter="c">
+                        <div class="editorAnswerCell">
+                            <button type="button" class="editorAnswerMarker" data-letter="c" title="Mark choice C as correct">C</button>
+                            <textarea class="editorAnswerInput" data-letter="c" rows="2" placeholder="Choice C" aria-label="Choice C"></textarea>
+                        </div>
+                    </td>
+                    <td data-letter="d">
+                        <div class="editorAnswerCell">
+                            <button type="button" class="editorAnswerMarker" data-letter="d" title="Mark choice D as correct">D</button>
+                            <textarea class="editorAnswerInput" data-letter="d" rows="2" placeholder="Choice D" aria-label="Choice D"></textarea>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            <textarea id="editorQuestionAnswerParagraphInput" rows="2" placeholder="Answer explanation" aria-label="Answer explanation"></textarea>
+            <p class="editorQuestionHint">Click a letter circle to set the correct answer. Ctrl+Enter saves and exits.</p>
+            <div id="editorQuestionActions">
+                <button type="button" id="saveQuestionButton">Save &amp; Exit</button>
+                <button type="button" id="discardQuestionButton" class="subtleLink">Discard &amp; Return</button>
+                <button type="button" id="deleteQuestionButton" class="subtleLink editorDeleteQuestion">Delete Question</button>
+            </div>
+        </div>
+    </div>
+`;
+
 let editorTopics = [];
+let editorQuestionContext = null;
 
 function createEditorQuestion(questionIndex) {
     return {
@@ -25,8 +91,8 @@ function createEditorQuestion(questionIndex) {
 
 function createEditorTopic() {
     return {
-        name: 'New Topic',
-        questions: [createEditorQuestion(0)]
+        name: `Topic ${editorTopics.length + 1}`,
+        questions: []
     };
 }
 
@@ -38,31 +104,146 @@ function openQuizEditor() {
     document.getElementById('openingView').style.display = 'none';
     document.getElementById('controlsView').style.display = 'none';
     quizEditorView.style.display = 'flex';
+    quizEditorQuestionView.style.display = 'none';
+    quizEditorQuestionView.replaceChildren();
+    quizEditorBoardView.style.display = 'flex';
+    editorQuestionContext = null;
 
     setQuizEditorError('');
-    setQuizEditorStatus('Build your quiz here, then export it as JSON. Changes stay in this tab until exported. Images can be an images/ filename, a relative path, or a web URL.');
-    renderQuizEditor();
+    setQuizEditorStatus('Select a question to edit it, or add a question at the bottom of a topic. Changes stay in this tab until exported.');
+    renderQuizBoard();
 }
 
 function closeQuizEditor() {
+    editorQuestionContext = null;
+    quizEditorQuestionView.style.display = 'none';
+    quizEditorQuestionView.replaceChildren();
+    quizEditorBoardView.style.display = 'flex';
     quizEditorView.style.display = 'none';
     document.getElementById('controlsView').style.display = '';
     document.getElementById('openingView').style.display = 'flex';
 }
 
-function addEditorTopic() {
-    editorTopics.push({
-        name: `Topic ${editorTopics.length + 1}`,
-        questions: [createEditorQuestion(0)]
+function renderQuizBoard() {
+    editorBoardTopics.replaceChildren();
+    editorBoardQuestions.replaceChildren();
+    editorBoardActions.replaceChildren();
+
+    if (editorTopics.length === 0) {
+        editorBoardTable.style.display = 'none';
+        quizEditorBoardEmpty.style.display = 'block';
+        return;
+    }
+
+    editorBoardTable.style.display = 'grid';
+    quizEditorBoardEmpty.style.display = 'none';
+
+    const maxQuestions = Math.max(0, ...editorTopics.map(topic => topic.questions.length));
+    const rowCount = Math.max(1, maxQuestions);
+
+    editorBoardTable.style.setProperty('--editor-topic-count', editorTopics.length);
+    editorBoardTable.style.setProperty('--editor-question-count', rowCount);
+
+    const headerRow = document.createElement('tr');
+    editorTopics.forEach((topic, topicIndex) => {
+        headerRow.appendChild(buildEditorTopicHeader(topic, topicIndex));
     });
+    editorBoardTopics.appendChild(headerRow);
+
+    for (let questionIndex = 0; questionIndex < rowCount; questionIndex++) {
+        const row = document.createElement('tr');
+
+        editorTopics.forEach((topic, topicIndex) => {
+            const cell = document.createElement('td');
+            const question = topic.questions[questionIndex];
+
+            if (question) {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'editorBoardQuestionButton';
+                button.textContent = getEditorQuestionScore(question, questionIndex);
+                button.addEventListener('click', () => openQuestionEditor(topicIndex, questionIndex));
+                cell.appendChild(button);
+            } else {
+                cell.className = 'editorBoardEmptyCell';
+            }
+
+            row.appendChild(cell);
+        });
+
+        editorBoardQuestions.appendChild(row);
+    }
+
+    const actionsRow = document.createElement('tr');
+    editorTopics.forEach((topic, topicIndex) => {
+        const cell = document.createElement('td');
+        const addButton = document.createElement('button');
+        addButton.type = 'button';
+        addButton.className = 'editorAddQuestionButton';
+        addButton.textContent = '+ Add Question';
+        addButton.addEventListener('click', () => addEditorQuestion(topicIndex));
+        cell.appendChild(addButton);
+        actionsRow.appendChild(cell);
+    });
+    editorBoardActions.appendChild(actionsRow);
+}
+
+function buildEditorTopicHeader(topic, topicIndex) {
+    const cell = document.createElement('th');
+    cell.className = 'editorBoardTopicHeader';
+
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.className = 'editorBoardTopicName';
+    nameInput.placeholder = 'Topic name';
+    nameInput.value = topic.name;
+    nameInput.setAttribute('aria-label', `Topic ${topicIndex + 1} name`);
+    nameInput.addEventListener('input', () => {
+        topic.name = nameInput.value;
+    });
+
+    const removeButton = document.createElement('button');
+    removeButton.type = 'button';
+    removeButton.className = 'editorTopicRemoveButton';
+    removeButton.textContent = '×';
+    removeButton.title = 'Remove topic';
+    removeButton.setAttribute('aria-label', `Remove topic ${topicIndex + 1}`);
+    removeButton.addEventListener('click', () => removeEditorTopic(topicIndex));
+
+    cell.append(nameInput, removeButton);
+    return cell;
+}
+
+function getEditorQuestionScore(question, questionIndex) {
+    const score = Number(question.score);
+    return Number.isFinite(score) ? score : (questionIndex + 1) * 100;
+}
+
+function addEditorTopic() {
+    editorTopics.push(createEditorTopic());
     setQuizEditorError('');
-    renderQuizEditor();
+    renderQuizBoard();
+
+    const topicInputs = editorBoardTopics.querySelectorAll('.editorBoardTopicName');
+    const newestInput = topicInputs[topicInputs.length - 1];
+    if (newestInput) {
+        newestInput.focus();
+        newestInput.select();
+    }
 }
 
 function removeEditorTopic(topicIndex) {
+    const topic = editorTopics[topicIndex];
+    const topicName = topic.name.trim() || `Topic ${topicIndex + 1}`;
+
+    if (!window.confirm(`Remove "${topicName}" and all of its questions?`)) {
+        return;
+    }
+
     editorTopics.splice(topicIndex, 1);
     setQuizEditorError('');
-    renderQuizEditor();
+    setQuizEditorStatus('Topic removed.');
+    renderQuizBoard();
 }
 
 function addEditorQuestion(topicIndex) {
@@ -77,125 +258,65 @@ function addEditorQuestion(topicIndex) {
 
     topic.questions.push(question);
     setQuizEditorError('');
-    renderQuizEditor();
+    openQuestionEditor(topicIndex, topic.questions.length - 1);
 }
 
-function removeEditorQuestion(topicIndex, questionIndex) {
-    editorTopics[topicIndex].questions.splice(questionIndex, 1);
-    setQuizEditorError('');
-    renderQuizEditor();
-}
-
-function renderQuizEditor() {
-    quizEditorTopicsElement.replaceChildren();
-
-    if (editorTopics.length === 0) {
-        const emptyState = document.createElement('p');
-        emptyState.className = 'editorEmptyState';
-        emptyState.textContent = 'No topics yet. Add a topic below to start building your quiz.';
-        quizEditorTopicsElement.appendChild(emptyState);
+function openQuestionEditor(topicIndex, questionIndex) {
+    const question = editorTopics[topicIndex] && editorTopics[topicIndex].questions[questionIndex];
+    if (!question) {
         return;
     }
 
-    editorTopics.forEach((topic, topicIndex) => {
-        quizEditorTopicsElement.appendChild(buildEditorTopicCard(topic, topicIndex));
-    });
+    editorQuestionContext = {
+        topicIndex: topicIndex,
+        questionIndex: questionIndex,
+        draft: { ...question }
+    };
+
+    quizEditorBoardView.style.display = 'none';
+    quizEditorQuestionView.style.display = 'flex';
+    setQuizEditorError('');
+    renderQuestionEditor();
 }
 
-function buildEditorTopicCard(topic, topicIndex) {
-    const topicCard = document.createElement('section');
-    topicCard.className = 'editorTopic';
-
-    const header = document.createElement('div');
-    header.className = 'editorTopicHeader';
-
-    const nameInput = document.createElement('input');
-    nameInput.type = 'text';
-    nameInput.className = 'editorTopicName';
-    nameInput.placeholder = 'Topic name';
-    nameInput.value = topic.name;
-    nameInput.setAttribute('aria-label', `Topic ${topicIndex + 1} name`);
-    nameInput.addEventListener('input', () => {
-        topic.name = nameInput.value;
-    });
-
-    const actions = document.createElement('div');
-    actions.className = 'editorTopicActions';
-    actions.appendChild(createEditorButton('+ Add Question', () => addEditorQuestion(topicIndex)));
-    actions.appendChild(createEditorButton('Remove Topic', () => removeEditorTopic(topicIndex), 'editorDangerButton'));
-
-    header.append(nameInput, actions);
-
-    const questionList = document.createElement('div');
-    questionList.className = 'editorQuestions';
-
-    if (topic.questions.length === 0) {
-        const emptyState = document.createElement('p');
-        emptyState.className = 'editorEmptyState';
-        emptyState.textContent = 'This topic has no questions yet.';
-        questionList.appendChild(emptyState);
+function renderQuestionEditor() {
+    if (!editorQuestionContext) {
+        return;
     }
 
-    topic.questions.forEach((question, questionIndex) => {
-        questionList.appendChild(buildEditorQuestionCard(question, topicIndex, questionIndex));
-    });
+    const context = editorQuestionContext;
+    const draft = context.draft;
+    const topic = editorTopics[context.topicIndex];
 
-    topicCard.append(header, questionList);
-    return topicCard;
-}
+    quizEditorQuestionView.innerHTML = EDITOR_QUESTION_TEMPLATE;
 
-function buildEditorQuestionCard(question, topicIndex, questionIndex) {
-    const questionCard = document.createElement('article');
-    questionCard.className = 'editorQuestion';
+    document.getElementById('editorQuestionTopicLabel').textContent = topic.name;
 
-    const header = document.createElement('div');
-    header.className = 'editorQuestionHeader';
-
-    const title = document.createElement('h3');
-    title.textContent = `Question ${questionIndex + 1}`;
-
-    const removeButton = createEditorButton(
-        'Remove Question',
-        () => removeEditorQuestion(topicIndex, questionIndex),
-        'editorDangerButton'
-    );
-
-    header.append(title, removeButton);
-
-    const fields = document.createElement('div');
-    fields.className = 'editorFields';
-
-    const headingInput = createEditorTextInput(question.heading, 'Question heading', value => {
-        question.heading = value;
-    });
-    fields.appendChild(createEditorField('Heading', headingInput));
-
-    const scoreInput = document.createElement('input');
-    scoreInput.type = 'number';
-    scoreInput.value = question.score;
-    scoreInput.placeholder = '100';
-    scoreInput.step = '10';
+    const scoreInput = document.getElementById('editorQuestionScoreInput');
+    scoreInput.value = draft.score;
     scoreInput.addEventListener('input', () => {
-        question.score = scoreInput.value;
+        draft.score = scoreInput.value;
     });
-    fields.appendChild(createEditorField('Score', scoreInput));
 
-    const imageInput = createEditorTextInput(
-        question.image,
-        'images/picture.png, ./images/picture.png, or https://...',
-        value => {
-            question.image = value;
-        }
-    );
-    const imageField = createEditorField('Image (optional)', imageInput);
+    const headingInput = document.getElementById('editorQuestionHeadingInput');
+    headingInput.textContent = draft.heading || '';
+    headingInput.addEventListener('input', () => {
+        draft.heading = headingInput.textContent;
+    });
 
-    const imagePreview = document.createElement('div');
-    imagePreview.className = 'editorImagePreview';
-    imageField.appendChild(imagePreview);
-    fields.appendChild(imageField);
+    const paragraphInput = document.getElementById('editorQuestionParagraphInput');
+    paragraphInput.value = draft.paragraph || '';
+    paragraphInput.addEventListener('input', () => {
+        draft.paragraph = paragraphInput.value;
+    });
+
+    const imageInput = document.getElementById('editorQuestionImageInput');
+    const imagePreview = document.getElementById('editorQuestionImagePreview');
+    imageInput.value = draft.image || '';
 
     let previewTimeout;
     imageInput.addEventListener('input', () => {
+        draft.image = imageInput.value;
         clearTimeout(previewTimeout);
         previewTimeout = setTimeout(() => {
             updateEditorImagePreview(imagePreview, imageInput.value);
@@ -205,91 +326,55 @@ function buildEditorQuestionCard(question, topicIndex, questionIndex) {
         clearTimeout(previewTimeout);
         updateEditorImagePreview(imagePreview, imageInput.value);
     });
-    updateEditorImagePreview(imagePreview, question.image);
+    imagePreview.addEventListener('click', () => imageInput.focus());
+    updateEditorImagePreview(imagePreview, draft.image);
 
-    const paragraphInput = createEditorTextarea(question.paragraph, 'The question the players will read', value => {
-        question.paragraph = value;
-    });
-    fields.appendChild(createEditorField('Question text', paragraphInput, 'editorFieldWide'));
-
-    const choices = document.createElement('div');
-    choices.className = 'editorChoices';
-    EDITOR_ANSWER_LETTERS.forEach(letter => {
-        const choiceInput = createEditorTextInput(question[letter], `Choice ${letter.toUpperCase()}`, value => {
-            question[letter] = value;
+    quizEditorQuestionView.querySelectorAll('.editorAnswerInput').forEach(input => {
+        const letter = input.dataset.letter;
+        input.value = draft[letter] || '';
+        input.addEventListener('input', () => {
+            draft[letter] = input.value;
         });
-        choices.appendChild(createEditorField(letter.toUpperCase(), choiceInput));
     });
-    fields.appendChild(choices);
 
-    const answerSelect = document.createElement('select');
-    EDITOR_ANSWER_LETTERS.forEach(letter => {
-        const option = document.createElement('option');
-        option.value = letter;
-        option.textContent = letter.toUpperCase();
-        answerSelect.appendChild(option);
-    });
-    answerSelect.value = question.answer;
-    answerSelect.addEventListener('change', () => {
-        question.answer = answerSelect.value;
-    });
-    fields.appendChild(createEditorField('Correct answer', answerSelect));
+    const answerCells = Array.from(quizEditorQuestionView.querySelectorAll('#editorAnswerTable td'));
+    const answerMarkers = Array.from(quizEditorQuestionView.querySelectorAll('.editorAnswerMarker'));
 
-    const answerParagraphInput = createEditorTextarea(
-        question.answerParagraph,
-        'Explanation shown after the question is answered',
-        value => {
-            question.answerParagraph = value;
+    function updateCorrectAnswerSelection() {
+        answerCells.forEach(cell => {
+            cell.classList.toggle('correctAnswer', cell.dataset.letter === draft.answer);
+        });
+        answerMarkers.forEach(marker => {
+            const isCorrect = marker.dataset.letter === draft.answer;
+            marker.classList.toggle('correct', isCorrect);
+            marker.setAttribute('aria-pressed', String(isCorrect));
+        });
+    }
+
+    answerMarkers.forEach(marker => {
+        marker.addEventListener('click', () => {
+            draft.answer = marker.dataset.letter;
+            updateCorrectAnswerSelection();
+        });
+    });
+    updateCorrectAnswerSelection();
+
+    const answerParagraphInput = document.getElementById('editorQuestionAnswerParagraphInput');
+    answerParagraphInput.value = draft.answerParagraph || '';
+    answerParagraphInput.addEventListener('input', () => {
+        draft.answerParagraph = answerParagraphInput.value;
+    });
+
+    document.getElementById('saveQuestionButton').addEventListener('click', saveQuestionAndExit);
+    document.getElementById('discardQuestionButton').addEventListener('click', discardQuestionAndExit);
+    document.getElementById('deleteQuestionButton').addEventListener('click', deleteQuestion);
+
+    quizEditorQuestionView.onkeydown = event => {
+        if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+            event.preventDefault();
+            saveQuestionAndExit();
         }
-    );
-    fields.appendChild(createEditorField('Answer explanation', answerParagraphInput, 'editorFieldWide'));
-
-    questionCard.append(header, fields);
-    return questionCard;
-}
-
-function createEditorButton(label, onClick, extraClass) {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.textContent = label;
-    if (extraClass) {
-        button.classList.add(extraClass);
-    }
-    button.addEventListener('click', onClick);
-    return button;
-}
-
-function createEditorField(labelText, input, extraClass) {
-    const label = document.createElement('label');
-    label.className = 'editorField';
-    if (extraClass) {
-        label.classList.add(extraClass);
-    }
-
-    const labelSpan = document.createElement('span');
-    labelSpan.className = 'editorFieldLabel';
-    labelSpan.textContent = labelText;
-
-    label.append(labelSpan, input);
-    return label;
-}
-
-function createEditorTextInput(value, placeholder, onInput) {
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.value = value || '';
-    input.placeholder = placeholder || '';
-    input.addEventListener('input', () => onInput(input.value));
-    return input;
-}
-
-function createEditorTextarea(value, placeholder, onInput) {
-    const textarea = document.createElement('textarea');
-    textarea.value = value || '';
-    textarea.placeholder = placeholder || '';
-    textarea.rows = 3;
-    textarea.addEventListener('input', () => onInput(textarea.value));
-    return textarea;
+    };
 }
 
 function updateEditorImagePreview(container, imageValue) {
@@ -299,7 +384,7 @@ function updateEditorImagePreview(container, imageValue) {
     const imageSource = resolveImageSource(imageValue);
     if (!imageSource) {
         container.classList.add('editorImagePreviewEmpty');
-        container.textContent = 'No image';
+        container.textContent = 'No image selected';
         return;
     }
 
@@ -318,6 +403,57 @@ function updateEditorImagePreview(container, imageValue) {
         container.textContent = 'Image could not be loaded.';
     };
     image.src = imageSource;
+}
+
+function saveQuestionAndExit() {
+    if (!editorQuestionContext) {
+        return;
+    }
+
+    const context = editorQuestionContext;
+    const draft = context.draft;
+
+    let score = Number(draft.score);
+    if (!Number.isFinite(score)) {
+        score = (context.questionIndex + 1) * 100;
+    }
+    draft.score = score;
+
+    editorTopics[context.topicIndex].questions[context.questionIndex] = { ...draft };
+    setQuizEditorStatus('Question saved.');
+    showQuizBoard();
+}
+
+function discardQuestionAndExit() {
+    if (!editorQuestionContext) {
+        return;
+    }
+
+    setQuizEditorStatus('Changes discarded.');
+    showQuizBoard();
+}
+
+function deleteQuestion() {
+    if (!editorQuestionContext) {
+        return;
+    }
+
+    if (!window.confirm('Delete this question?')) {
+        return;
+    }
+
+    const context = editorQuestionContext;
+    editorTopics[context.topicIndex].questions.splice(context.questionIndex, 1);
+    setQuizEditorStatus('Question deleted.');
+    showQuizBoard();
+}
+
+function showQuizBoard() {
+    editorQuestionContext = null;
+    quizEditorQuestionView.style.display = 'none';
+    quizEditorQuestionView.replaceChildren();
+    quizEditorBoardView.style.display = 'flex';
+    renderQuizBoard();
 }
 
 function setQuizEditorError(message) {
@@ -462,9 +598,14 @@ function loadQuizForEditing(event) {
                 }))
             }));
 
+            editorQuestionContext = null;
+            quizEditorQuestionView.style.display = 'none';
+            quizEditorQuestionView.replaceChildren();
+            quizEditorBoardView.style.display = 'flex';
+
             setQuizEditorError('');
-            setQuizEditorStatus('Quiz loaded into the editor. Make your changes, then export it as JSON.');
-            renderQuizEditor();
+            setQuizEditorStatus('Quiz loaded into the editor. Select a question to edit it, or add a new one.');
+            renderQuizBoard();
         } catch (error) {
             setQuizEditorError(error instanceof SyntaxError
                 ? 'That file is not valid JSON.'

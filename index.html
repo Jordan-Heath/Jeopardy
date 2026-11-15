@@ -96,21 +96,31 @@
         </div>
 
         <div id="quizEditorView" style="display: none;">
-            <div id="quizEditorHeader">
-                <div id="quizEditorHeading">
-                    <h1>Custom Quiz Maker</h1>
-                    <p id="quizEditorStatus" class="editorStatus"></p>
+            <div id="quizEditorBoardView">
+                <div id="quizEditorHeader">
+                    <div id="quizEditorHeading">
+                        <h1>Custom Quiz Maker</h1>
+                        <p id="quizEditorStatus" class="editorStatus"></p>
+                    </div>
+                    <div id="quizEditorToolbar">
+                        <input type="file" id="quizEditorFileInput" accept=".json,application/json" style="display: none;">
+                        <button type="button" onclick="quizEditorFileInput.click();">Load JSON</button>
+                        <button type="button" onclick="downloadEditorQuiz();">Export JSON</button>
+                        <button type="button" id="closeQuizEditorButton" onclick="closeQuizEditor();">Back to Menu</button>
+                    </div>
                 </div>
-                <div id="quizEditorToolbar">
-                    <input type="file" id="quizEditorFileInput" accept=".json,application/json" style="display: none;">
-                    <button type="button" onclick="quizEditorFileInput.click();">Load JSON</button>
-                    <button type="button" onclick="downloadEditorQuiz();">Export JSON</button>
-                    <button type="button" id="closeQuizEditorButton" onclick="closeQuizEditor();">Back to Menu</button>
+                <p id="quizEditorError" class="errorMessage" role="alert"></p>
+                <p id="editorBoardEmpty" class="editorEmptyState" style="display: none;">No topics yet. Add a topic below to get started.</p>
+                <div id="quizEditorBoard">
+                    <table id="editorBoardTable">
+                        <thead id="editorBoardTopics"></thead>
+                        <tbody id="editorBoardQuestions"></tbody>
+                        <tfoot id="editorBoardActions"></tfoot>
+                    </table>
                 </div>
+                <button type="button" id="addTopicButton" onclick="addEditorTopic();">+ Add Topic</button>
             </div>
-            <p id="quizEditorError" class="errorMessage" role="alert"></p>
-            <div id="quizEditorTopics"></div>
-            <button type="button" id="addTopicButton" onclick="addEditorTopic();">+ Add Topic</button>
+            <div id="quizEditorQuestionView" style="display: none;"></div>
         </div>
     </div>
 
