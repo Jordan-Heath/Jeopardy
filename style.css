@@ -11,6 +11,10 @@
     --yellow-dark: #b8960e;
     --yellow-hover: #ffcf1f;
     --yellow-dark-hover: #997b09;
+    --yellow-active: #e6b800;
+    --yellow-active-dark: #8a7008;
+    --yellow-active-hover: #d1a800;
+    --yellow-active-dark-hover: #735d07;
     --disabled: #888888;
     --disabled-dark: #999999;
     --panel: #d4edda;
@@ -127,6 +131,15 @@ button {
         --button-bg-hover: var(--green-active-hover);
         --button-shadow: var(--green-active-dark);
         --button-shadow-hover: var(--green-active-dark-hover);
+    }
+
+    /* If a player selects the same answer as the chooser, keep it yellow to
+       indicate it is a copied answer, but darken it to show it's selected. */
+    &.chooserAnswer.activated {
+        --button-bg: var(--yellow-active);
+        --button-bg-hover: var(--yellow-active-hover);
+        --button-shadow: var(--yellow-active-dark);
+        --button-shadow-hover: var(--yellow-active-dark-hover);
     }
 
     &:disabled {
@@ -992,6 +1005,7 @@ input:focus-visible {
     .player-score {
         margin: 0;
         font-size: var(--fs-score);
+        cursor: pointer;
     }
 
     table {

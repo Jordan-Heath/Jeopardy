@@ -3,6 +3,31 @@
 
 const ANSWER_LETTERS = ['a', 'b', 'c', 'd'];
 
+// Fallback images used when a question image cannot be loaded. A "dicebag"
+// approach is used: each image is drawn once in random order until all have
+// been used, then the bag is refilled and shuffled draws continue.
+const FALLBACK_IMAGE_SOURCES = ['images/1.jpg', 'images/2.jpg', 'images/3.jpg'];
+let fallbackImageDicebag = [];
+
+function drawFallbackImageSource() {
+    if (fallbackImageDicebag.length === 0) {
+        fallbackImageDicebag = FALLBACK_IMAGE_SOURCES.slice();
+    }
+
+    const index = Math.floor(Math.random() * fallbackImageDicebag.length);
+    return fallbackImageDicebag.splice(index, 1)[0];
+}
+
+// Set an image source with a random fallback if loading fails. The fallback is
+// attempted once to avoid an infinite error loop if the fallback is unavailable.
+function setImageWithFallback(imageElement, source) {
+    imageElement.onerror = () => {
+        imageElement.onerror = null;
+        imageElement.src = drawFallbackImageSource();
+    };
+    imageElement.src = source;
+}
+
 // Images can be bare filenames from the images folder, paths relative to the
 // app ("./pictures/foo.png"), or remote URLs ("https://example.com/foo.png").
 function resolveImageSource(image) {

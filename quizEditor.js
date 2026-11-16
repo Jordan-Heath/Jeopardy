@@ -463,12 +463,7 @@ function updateEditorImagePreview(container, imageValue) {
     const image = new Image();
     image.alt = 'Question image preview';
     image.onload = () => container.replaceChildren(image);
-    image.onerror = () => {
-        container.replaceChildren();
-        container.classList.add('editorImagePreviewError');
-        container.textContent = 'Image could not be loaded.';
-    };
-    image.src = imageSource;
+    setImageWithFallback(image, imageSource);
 }
 
 function saveQuestionAndExit() {

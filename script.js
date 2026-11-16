@@ -82,6 +82,7 @@ function selectPlayerCount(button, playerCount) {
         const playerScore = document.createElement('div');
         playerScore.className = 'player-score';
         playerScore.textContent = '0';
+        playerScore.title = 'Click to edit score';
 
         const table = document.createElement('table');
         for (let row = 0; row < 2; row++) {
@@ -106,7 +107,9 @@ function selectPlayerCount(button, playerCount) {
 
         playerElement.append(playerNameInput, playerScore, table);
         playersView.appendChild(playerElement);
-        players.push(new Player(`Player ${i + 1}`, playerElement));
+        const player = new Player(`Player ${i + 1}`, playerElement);
+        players.push(player);
+        playerScore.addEventListener('click', () => editPlayerScore(player));
     }
 
     players.forEach(player => player.disableControls());
@@ -172,8 +175,7 @@ function selectQuestion(button, topicNumber, questionNumber) {
     const imageSource = resolveImageSource(question.image);
     if (imageSource) {
         questionImage.alt = question.heading || 'Question image';
-        questionImage.onerror = () => hideElement(questionImage);
-        questionImage.src = imageSource;
+        setImageWithFallback(questionImage, imageSource);
         showElement(questionImage);
     } else {
         questionImage.removeAttribute('src');
@@ -236,6 +238,27 @@ function highlightChooserAnswer(selection) {
             );
         });
     });
+}
+
+// Debug helper: allow manual score correction (e.g. after a misclick).
+function editPlayerScore(player) {
+    const input = window.prompt(`Set score for ${player.name}:`, String(player.score));
+    if (input === null) {
+        return;
+    }
+
+    const normalized = input.trim();
+    if (normalized === '') {
+        return;
+    }
+
+    const newScore = Number(normalized);
+    if (!Number.isFinite(newScore)) {
+        return;
+    }
+
+    player.score = newScore;
+    player.updateView();
 }
 
 function playerSelectAnswer(button, player, selection) {
