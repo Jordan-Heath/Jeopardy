@@ -188,7 +188,7 @@ const DATA = {
   "IP, Ethics & Privacy": [
     {
       "heading": "Copyright Scope",
-      "image": "ict-ip-ethics.svg",
+      "image": "ipethicsprivacy100.webp",
       "paragraph": "What does copyright protect?",
       "a": "Ideas themselves, as soon as someone thinks of them",
       "b": "The original expression of ideas, such as code, text and images",
@@ -196,11 +196,11 @@ const DATA = {
       "d": "Works registered with a government office",
       "answer": "b",
       "score": 100,
-      "answerParagraph": "Copyright attaches automatically to original expression — no registration needed — but the underlying ideas, methods and facts remain free for anyone to use."
+      "answerParagraph": "Copyright attaches automatically to original expression with no registration needed. The underlying ideas, methods and facts remain free for anyone to use."
     },
     {
       "heading": "Ethical Escalation",
-      "image": "ict-ip-ethics.svg",
+      "image": "ipethicsprivacy200.jpg",
       "paragraph": "During work placement you see your supervisor logging into the CEO's account to approve their own refunds. What is the most ethical response?",
       "a": "Stay quiet; the supervisor outranks you",
       "b": "Announce it publicly on social media",
@@ -212,23 +212,23 @@ const DATA = {
     },
     {
       "heading": "Data Breach Duty",
-      "image": "ict-ip-ethics.svg",
-      "paragraph": "Your employer loses an unencrypted USB drive containing clients' names, addresses and Medicare numbers. Under Australia's Notifiable Data Breaches scheme, what must happen?",
-      "a": "Assess whether serious harm is likely, and if so notify the OAIC and the affected individuals",
-      "b": "Nothing; losing a device was an accident",
-      "c": "Notify only if a journalist asks",
-      "d": "Discipline the staff member, which closes the matter",
+      "image": "ipethicsprivacy300.jpg",
+      "paragraph": "Your employer loses a cool-looking USB drive containing clients' names, addresses and Medicare numbers. Under Australia's Notifiable Data Breaches scheme, what must happen?",
+      "a": "Harm is likely, so notify the OAIC and the affected individuals",
+      "b": "Harm is unlikely, so write an internal incident report",
+      "c": "Punish the staff member!",
+      "d": "Don't punish the staff member, it was an accident!",
       "answer": "a",
       "score": 300,
       "answerParagraph": "When a data breach is likely to cause serious harm, affected individuals and the OAIC must be notified as soon as practicable. Unencrypted health-related identifiers push it well past that threshold."
     },
     {
       "heading": "Contract IP Trap",
-      "image": "ict-ip-ethics.svg",
+      "image": "ipethicsprivacy400.jpg",
       "paragraph": "A contractor builds a booking system for a gym. The contract says nothing at all about intellectual property. Who owns the copyright?",
       "a": "The gym, because they paid for it",
-      "b": "Nobody; finished code is public domain",
-      "c": "Whoever wrote the most lines",
+      "b": "Nobody until a licensing agreement is formed",
+      "c": "The individual workers who wrote the code",
       "d": "The contractor, with the gym holding only an implied licence to use it",
       "answer": "d",
       "score": 400,
@@ -236,21 +236,21 @@ const DATA = {
     },
     {
       "heading": "Clean-Room Software",
-      "image": "ict-ip-ethics.svg",
+      "image": "ipethicsprivacy500.jpg",
       "paragraph": "A company wants to build a product that behaves exactly like a competitor's, without infringing copyright. In a clean-room approach, how is this organised?",
       "a": "Engineers study the competitor's product and reuse fragments of its code in new software",
-      "b": "The competitor's code is deleted and rewritten from memory",
-      "c": "One team studies the product and writes a behaviour specification only; a separate team that never sees the original implements code purely from that specification",
+      "b": "The competitor's code is read, deleted, and rewritten from memory",
+      "c": "One team studies the product and writes a behaviour specification. A separate team implements code purely from that specification",
       "d": "Lawyers review the finished product only after release",
       "answer": "c",
       "score": 500,
-      "answerParagraph": "Copyright protects the expression of a program, not its behaviour — so implementing the same functionality from an independent specification can avoid copying protected code. Keeping the two teams strictly separated is what makes the room 'clean': it proves the implementation could not have been copied."
+      "answerParagraph": "Copyright protects the expression of a program, not its behaviour. So copying the features does not fall under copyright so long as the code isn't copied. The clean room design prevents this. Patented designs and methods are not prevented from a clean room approach."
     }
   ],
   "Cloud": [
     {
       "heading": "Service Models",
-      "image": "ict-cloud.svg",
+      "image": "cloud100.png",
       "paragraph": "Which cloud service model delivers complete ready-to-run applications over the internet, such as web-based email?",
       "a": "IaaS",
       "b": "PaaS",
@@ -258,55 +258,55 @@ const DATA = {
       "d": "SaaS",
       "answer": "d",
       "score": 100,
-      "answerParagraph": "Software as a Service is a finished application you just use; IaaS rents raw infrastructure, and PaaS provides a platform for building and deploying your own."
+      "answerParagraph": "Software as a Service is a finished application you just use. IaaS rents raw infrastructure, PaaS provides a platform for building and deploying your own, and DaaS provides a virtual desktop."
     },
     {
       "heading": "Shared Responsibility",
-      "image": "ict-cloud.svg",
+      "image": "cloud200.png",
       "paragraph": "Attackers exploit an unpatched operating system on a company's IaaS virtual server and steal data. Who was responsible for patching that OS?",
       "a": "The cloud provider",
       "b": "The customer",
-      "c": "The ISP",
-      "d": "Nobody; clouds patch themselves",
+      "c": "Joint responsibility",
+      "d": "This has never been resolved in a court",
       "answer": "b",
       "score": 200,
       "answerParagraph": "In IaaS the provider secures the physical and virtualised infrastructure, but the guest operating system, apps, data and access remain the customer's responsibility."
     },
     {
       "heading": "Data Residency",
-      "image": "ict-cloud.svg",
+      "image": "cloud300.webp",
       "paragraph": "A Sydney firm sets up a cloud service whose default region is US-East, but it will hold European customers' personal information. Why does the region choice matter?",
-      "a": "Where personal data is stored can trigger legal obligations, such as GDPR transfer safeguards",
+      "a": "Data sovereinity",
       "b": "Regions only affect download speed",
       "c": "The internet has no borders",
       "d": "GDPR bans Australian firms from EU data entirely",
       "answer": "a",
       "score": 300,
-      "answerParagraph": "Data protection law can follow the data: storing EU residents' personal information overseas may breach the GDPR unless safeguards such as standard contractual clauses are in place. Residency is a compliance decision, not just a performance one."
+      "answerParagraph": "Storing EU residents' personal information overseas may breach the GDPR. Residency is a compliance decision, not just a performance one."
     },
     {
       "heading": "CapEx vs OpEx",
-      "image": "ict-cloud.svg",
+      "image": "cloud400.png",
       "paragraph": "A startup with unpredictable traffic that spikes up to 8x normal load must choose between buying a $15,000 server or renting equivalent cloud capacity at $450 per month. Which analysis is correct?",
       "a": "Rent cloud: monthly costs are predictable, so cloud is always cheaper",
       "b": "Buy the server: it pays for itself in under three years, and the spikes can be dealt with later",
       "c": "Weigh total cost of ownership against elasticity: the server is cheaper at steady load, but cloud absorbs 8x spikes without overbuilding",
-      "d": "Buy two smaller servers so each handles half the workload",
+      "d": "Ignore this option. I am required to provide 4 options",
       "answer": "c",
       "score": 400,
       "answerParagraph": "Raw cost actually favours the server — $450 a month overtakes $15,000 in under three years. The deciding factor is elasticity: an 8x spike on owned hardware means outage or emergency spending, while cloud scales up and bills only while the spike lasts."
     },
     {
-      "heading": "Vendor Lock-In",
-      "image": "ict-cloud.svg",
+      "heading": "Long term Vendor judgement",
+      "image": "cloud500.jpg",
       "paragraph": "Before signing a three-year contract with a cloud vendor, which evaluation best protects the business long-term?",
-      "a": "Choose the vendor with the largest market share",
+      "a": "Choose the vendor with the largest community and support",
       "b": "Compare the per-gigabyte storage price",
-      "c": "Check whether the vendor's branding fits",
-      "d": "Assess how hard it would be to leave: export formats, egress fees, and contractual data-return terms",
+      "c": "Check the vendor's projected price in 3 years",
+      "d": "Assess how hard it would be to leave",
       "answer": "d",
       "score": 500,
-      "answerParagraph": "Proprietary data formats and steep egress fees make leaving expensive — that's lock-in. Mature organisations plan the exit path before signing anything, and cheap headline storage often hides large retrieval charges."
+      "answerParagraph": "Lock in contracts make leaving expensive. Organisations plan the exit path before signing anything, and cheap headline storage often hides large retrieval charges."
     }
   ]
 };
