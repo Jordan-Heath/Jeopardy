@@ -9,7 +9,7 @@ const DATA = {
       "c": "2",
       "d": "12",
       "answer": "c",
-      "score": 100,
+      "score": 10,
       "answerParagraph": "% gives the remainder after division. 5 fits into 17 three times (15), leaving 2."
     },
     {
@@ -21,7 +21,7 @@ const DATA = {
       "c": "None",
       "d": "An error",
       "answer": "a",
-      "score": 200,
+      "score": 20,
       "answerParagraph": "Assigning a variable within a function creates a new local variable, leaving the global x untouched."
     },
     {
@@ -33,7 +33,7 @@ const DATA = {
       "c": "3",
       "d": "6",
       "answer": "b",
-      "score": 300,
+      "score": 30,
       "answerParagraph": "The outer loop will run 3 times where i=0, then i=1, then i=2. When i=0 the inner loop doesn't run. When i=1, the inner loop adds 0 to total. When i=2, the inner loop adds 0 to total, then adds 1 to total. Thus, Total = 1."
     },
     {
@@ -45,7 +45,7 @@ const DATA = {
       "c": "Store the users in a set instead of a list",
       "d": "Wrap each check in a try/except block",
       "answer": "c",
-      "score": 400,
+      "score": 40,
       "answerParagraph": "A list must be scanned item by item, so every check gets slower as the list grows. A set uses a technique called hashing that locates any member almost instantly regardless of size. Choosing the right data structure beats speeding up the code around it."
     },
     {
@@ -57,7 +57,7 @@ const DATA = {
       "c": "['a', 'b']",
       "d": "An error",
       "answer": "c",
-      "score": 500,
+      "score": 50,
       "answerParagraph": "items is a default argument for add_item. Python evaluates the default [] once, when the function is defined, and attaches that single list to the function (it is not recreated on each call). Because the first call appends to it, by the second call it already contains ['a'] instead of being empty. The second call appends 'b', giving ['a', 'b']."
     }
   ],
@@ -71,7 +71,7 @@ const DATA = {
       "c": "Something you are",
       "d": "Somewhere you are",
       "answer": "b",
-      "score": 100,
+      "score": 10,
       "answerParagraph": "Possession factors are things you physically or digitally hold, like a phone or token. A one-time code cannot be known, nor is it fundamental to you. But a onetime code does prove you have the authentication app!"
     },
     {
@@ -83,7 +83,7 @@ const DATA = {
       "c": "Plain text behind a strong admin password",
       "d": "Salted hash per user",
       "answer": "d",
-      "score": 200,
+      "score": 20,
       "answerParagraph": "Passwords should never be recoverable, not even by the company. Salted hashing can't be reversed and hides identical passwords; encryption is undone if the key leaks, and Base64 is just encoding."
     },
     {
@@ -95,7 +95,7 @@ const DATA = {
       "c": "Insider attack",
       "d": "Maintenance noise",
       "answer": "a",
-      "score": 300,
+      "score": 30,
       "answerParagraph": "The report shows many IPs, valid usernames, and common passwords. That combination suggests an attacker is replaying username-password pairs leaked from other sites. MFA would be a valid means of preventing this."
     },
     {
@@ -107,7 +107,7 @@ const DATA = {
       "c": "Principle of Least Privilege",
       "d": "Access Logs",
       "answer": "c",
-      "score": 400,
+      "score": 40,
       "answerParagraph": "A device with malware on it can only get as much access as the user's privilege allowed. This would limit the severity of damage based on the privilege of the user. Passwords and MFA won't prevent a device that is already logged in. Access logs don't prevent anything, only record it."
     },
     {
@@ -119,7 +119,7 @@ const DATA = {
       "c": "Find whoever takes responsibility and pay them a hefty ransom",
       "d": "Reboot servers",
       "answer": "b",
-      "score": 500,
+      "score": 50,
       "answerParagraph": "Containment comes before recovery. Restoring backups without isolating just means we get to watch it all get encrypted again. Rebooting potentially destroys evidence, and paying is expensive and provides no guarantees."
     }
   ],
@@ -133,7 +133,7 @@ const DATA = {
       "c": "A NAS box",
       "d": "A wireless access point",
       "answer": "a",
-      "score": 100,
+      "score": 10,
       "answerParagraph": "Routers connect different networks to each other. Switches connect devices inside one network. NAS is a storage endpoint. An access point extends Wi-Fi but doesn't route anything."
     },
     {
@@ -145,7 +145,7 @@ const DATA = {
       "c": "The DNS resolver is unreachable or misconfigured",
       "d": "The browser is out of date",
       "answer": "c",
-      "score": 200,
+      "score": 20,
       "answerParagraph": "Raw IP connectivity works but turning names into addresses doesn't. This translation step indicates a DNS failure. A cable, or router problem would stop the IP ping in addition to the DNS. Browser is likely unrelated."
     },
     {
@@ -157,7 +157,7 @@ const DATA = {
       "c": "The office PC rejects home IP addresses",
       "d": "No port-forwarding rule has been established",
       "answer": "a",
-      "score": 300,
+      "score": 30,
       "answerParagraph": "Private addresses like 192.168.x.x aren't routable across the internet. Attempting to connect to 192.168.1.50 would connect you to a local device rather than anything outside your network."
     },
     {
@@ -169,7 +169,7 @@ const DATA = {
       "c": "64 usable; broadcast 192.168.50.255",
       "d": "126 usable; broadcast 192.168.50.127",
       "answer": "a",
-      "score": 400,
+      "score": 40,
       "answerParagraph": "A /26 leaves 6 bits for hosts. 2*2*2*2*2*2 = 64 addresses. Subtract the network address and the broadcast address leaves 62 usable, spanning .0 to .63."
     },
     {
@@ -181,7 +181,7 @@ const DATA = {
       "c": "A normal address",
       "d": "DHCP failed and the machine self-assigned an address",
       "answer": "d",
-      "score": 500,
+      "score": 50,
       "answerParagraph": "169.254.x.x is a link-local address Windows gives itself (APIPA) when it asks DHCP for an address and gets no reply."
     }
   ],
@@ -192,35 +192,35 @@ const DATA = {
       "paragraph": "What does copyright protect?",
       "a": "Ideas themselves, as soon as someone thinks of them",
       "b": "The original expression of ideas, such as code, text and images",
-      "c": "Physical hardware only",
+      "c": "Innovative methods",
       "d": "Works registered with a government office",
       "answer": "b",
-      "score": 100,
+      "score": 10,
       "answerParagraph": "Copyright attaches automatically to original expression with no registration needed. The underlying ideas, methods and facts remain free for anyone to use."
     },
     {
       "heading": "Ethical Escalation",
       "image": "ipethicsprivacy200.jpg",
       "paragraph": "During work placement you see your supervisor logging into the CEO's account to approve their own refunds. What is the most ethical response?",
-      "a": "Stay quiet; the supervisor outranks you",
-      "b": "Announce it publicly on social media",
-      "c": "Don't take part, write down what you saw, and raise it through the organisation's reporting channel",
-      "d": "Change the CEO's password yourself",
+      "a": "Sounds typical, let him go",
+      "b": "Publicly denounce your supervisor",
+      "c": "Report your supervisor",
+      "d": "Change the CEO's password to prevent this sham",
       "answer": "c",
-      "score": 200,
-      "answerParagraph": "Withdraw from the wrongdoing, record the facts, and escalate confidentially. Public accusations risk defamation, secretly changing systems is itself misconduct, and staying silent makes you complicit."
+      "score": 20,
+      "answerParagraph": "It's best to record the facts, and escalate confidentially. Public accusations risk defamation, secretly changing systems is itself misconduct, and staying silent makes you complicit."
     },
     {
       "heading": "Data Breach Duty",
       "image": "ipethicsprivacy300.jpg",
       "paragraph": "Your employer loses a cool-looking USB drive containing clients' names, addresses and Medicare numbers. Under Australia's Notifiable Data Breaches scheme, what must happen?",
-      "a": "Harm is likely, so notify the OAIC and the affected individuals",
-      "b": "Harm is unlikely, so write an internal incident report",
-      "c": "Punish the staff member!",
-      "d": "Don't punish the staff member, it was an accident!",
+      "a": "Harm is likely; notify the OAIC and the affected individuals",
+      "b": "Harm is unlikely; write an internal incident report",
+      "c": "Punish the staff member; break his nose!",
+      "d": "Don't punish the staff member; it was an accident!",
       "answer": "a",
-      "score": 300,
-      "answerParagraph": "When a data breach is likely to cause serious harm, affected individuals and the OAIC must be notified as soon as practicable. Unencrypted health-related identifiers push it well past that threshold."
+      "score": 30,
+      "answerParagraph": "When a data breach is likely to cause serious harm, affected individuals and the OAIC must be notified as soon as practicable. Health-related identifiers push it well past that threshold. Punishment is an entirely separate concern unrelated to the Australian Notifiable Data Breaches scheme."
     },
     {
       "heading": "Contract IP Trap",
@@ -231,19 +231,19 @@ const DATA = {
       "c": "The individual workers who wrote the code",
       "d": "The contractor, with the gym holding only an implied licence to use it",
       "answer": "d",
-      "score": 400,
-      "answerParagraph": "Paying for work does not transfer copyright; assignment must be in writing. The gap between owning code and merely being licensed to use it is a trap that trips up real businesses."
+      "score": 40,
+      "answerParagraph": "Paying for work does not transfer copyright, that must be in writing. There is a gap between owning code and merely being licensed to use it."
     },
     {
       "heading": "Clean-Room Software",
       "image": "ipethicsprivacy500.jpg",
       "paragraph": "A company wants to build a product that behaves exactly like a competitor's, without infringing copyright. In a clean-room approach, how is this organised?",
-      "a": "Engineers study the competitor's product and reuse fragments of its code in new software",
-      "b": "The competitor's code is read, deleted, and rewritten from memory",
+      "a": "Engineers decompile the executable to get the assembly. They then write code which compiles into an executable with the same assembly",
+      "b": "The competitor's code is read, and rewritten from memory",
       "c": "One team studies the product and writes a behaviour specification. A separate team implements code purely from that specification",
-      "d": "Lawyers review the finished product only after release",
+      "d": "Clean-room is just another word for \"in your own words\"",
       "answer": "c",
-      "score": 500,
+      "score": 50,
       "answerParagraph": "Copyright protects the expression of a program, not its behaviour. So copying the features does not fall under copyright so long as the code isn't copied. The clean room design prevents this. Patented designs and methods are not prevented from a clean room approach."
     }
   ],
@@ -257,11 +257,11 @@ const DATA = {
       "c": "DaaS",
       "d": "SaaS",
       "answer": "d",
-      "score": 100,
+      "score": 10,
       "answerParagraph": "Software as a Service is a finished application you just use. IaaS rents raw infrastructure, PaaS provides a platform for building and deploying your own, and DaaS provides a virtual desktop."
     },
     {
-      "heading": "Shared Responsibility",
+      "heading": "Responsibility",
       "image": "cloud200.png",
       "paragraph": "Attackers exploit an unpatched operating system on a company's IaaS virtual server and steal data. Who was responsible for patching that OS?",
       "a": "The cloud provider",
@@ -269,32 +269,32 @@ const DATA = {
       "c": "Joint responsibility",
       "d": "This has never been resolved in a court",
       "answer": "b",
-      "score": 200,
+      "score": 20,
       "answerParagraph": "In IaaS the provider secures the physical and virtualised infrastructure, but the guest operating system, apps, data and access remain the customer's responsibility."
     },
     {
       "heading": "Data Residency",
       "image": "cloud300.webp",
       "paragraph": "A Sydney firm sets up a cloud service whose default region is US-East, but it will hold European customers' personal information. Why does the region choice matter?",
-      "a": "Data sovereinity",
+      "a": "data sovereignty",
       "b": "Regions only affect download speed",
-      "c": "The internet has no borders",
-      "d": "GDPR bans Australian firms from EU data entirely",
+      "c": "GDPR bans Australian firms from EU data entirely",
+      "d": "Region choice can benefit from cheap labor",
       "answer": "a",
-      "score": 300,
+      "score": 30,
       "answerParagraph": "Storing EU residents' personal information overseas may breach the GDPR. Residency is a compliance decision, not just a performance one."
     },
     {
       "heading": "CapEx vs OpEx",
       "image": "cloud400.png",
-      "paragraph": "A startup with unpredictable traffic that spikes up to 8x normal load must choose between buying a $15,000 server or renting equivalent cloud capacity at $450 per month. Which analysis is correct?",
-      "a": "Rent cloud: monthly costs are predictable, so cloud is always cheaper",
-      "b": "Buy the server: it pays for itself in under three years, and the spikes can be dealt with later",
-      "c": "Weigh total cost of ownership against elasticity: the server is cheaper at steady load, but cloud absorbs 8x spikes without overbuilding",
-      "d": "Ignore this option. I am required to provide 4 options",
+      "paragraph": "A startup with unpredictable traffic that spikes up to 8x normal load must choose between buying a $15,000 server or renting equivalent cloud capacity at $450 per month. Which analysis is most correct?",
+      "a": "Rent cloud: a stable cost of $450 is an affordable expense with less lock-in than capital expenditure",
+      "b": "Buy server: it pays for itself in under three years, and the spikes can be dealt with later",
+      "c": "Rent cloud: given the volatility in traffic, the $15k server is excessive most of the time and limited other times. Get a variable rate cloud to save during low usage.",
+      "d": "Please Ignore this option. I am required to provide 4 options",
       "answer": "c",
-      "score": 400,
-      "answerParagraph": "Raw cost actually favours the server — $450 a month overtakes $15,000 in under three years. The deciding factor is elasticity: an 8x spike on owned hardware means outage or emergency spending, while cloud scales up and bills only while the spike lasts."
+      "score": 40,
+      "answerParagraph": "Raw cost actually favours, $450 a month overtakes $15,000 in under three years. The deciding factor is elasticity: an 8x spike on owned hardware means outage or emergency spending, while cloud scales up and bills higher only while the spike lasts."
     },
     {
       "heading": "Long term Vendor judgement",
@@ -305,8 +305,8 @@ const DATA = {
       "c": "Check the vendor's projected price in 3 years",
       "d": "Assess how hard it would be to leave",
       "answer": "d",
-      "score": 500,
-      "answerParagraph": "Lock in contracts make leaving expensive. Organisations plan the exit path before signing anything, and cheap headline storage often hides large retrieval charges."
+      "score": 50,
+      "answerParagraph": "Lock in contracts make leaving expensive. Organisations plan the exit path before signing anything, and cheap storage often hides unexpected fees."
     }
   ]
 };
